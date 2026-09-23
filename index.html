@@ -88,9 +88,9 @@
       // Social Battery state
       const [battery, setBattery] = useState(() => parseInt(localStorage.getItem('haven_battery')) || 50);
 
-      // Audio Synthesizer for Gentle Rain
+      // Audio Synthesizer for Slow Raindrops
       const audioCtxRef = useRef(null);
-      const rainSourceRef = useRef(null);
+      const timerRef = useRef(null);
 
       // Save Ether text locally
       useEffect(() => {
@@ -121,9 +121,36 @@
         return () => postsRef.off();
       }, []);
 
-      // Toggle Synthesized Gentle Rain Audio
+      // Play individual raindrop synthesis
+      const playDrop = (ctx) => {
+        if (!ctx || ctx.state === 'closed') return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Randomize pitch for realistic soft drops
+        const startFreq = 400 + Math.random() * 600;
+        const endFreq = 150 + Math.random() * 100;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + 0.08);
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.09);
+      };
+
+      // Toggle Synthesized Slow Raindrop Audio
       const toggleRain = () => {
         if (isPlayingRain) {
+          if (timerRef.current) clearInterval(timerRef.current);
           if (audioCtxRef.current) {
             audioCtxRef.current.close();
             audioCtxRef.current = null;
@@ -135,36 +162,28 @@
             const ctx = new AudioContext();
             audioCtxRef.current = ctx;
 
-            const bufferSize = ctx.sampleRate * 2;
-            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-            const output = noiseBuffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-              output[i] = Math.random() * 2 - 1;
-            }
+            // Trigger slow randomized drops every 200ms - 600ms
+            const scheduleDrops = () => {
+              playDrop(ctx);
+              const nextInterval = 200 + Math.random() * 400;
+              timerRef.current = setTimeout(scheduleDrops, nextInterval);
+            };
 
-            const whiteNoise = ctx.createBufferSource();
-            whiteNoise.buffer = noiseBuffer;
-            whiteNoise.loop = true;
-
-            const filter = ctx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.value = 800;
-
-            const gainNode = ctx.createGain();
-            gainNode.gain.value = 0.15;
-
-            whiteNoise.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(ctx.destination);
-
-            whiteNoise.start();
-            rainSourceRef.current = whiteNoise;
+            scheduleDrops();
             setIsPlayingRain(true);
           } catch (e) {
             console.error("Audio playback error:", e);
           }
         }
       };
+
+      // Cleanup audio on unmount
+      useEffect(() => {
+        return () => {
+          if (timerRef.current) clearTimeout(timerRef.current);
+          if (audioCtxRef.current) audioCtxRef.current.close();
+        };
+      }, []);
 
       // Post to Firebase Safe Wall
       const handleAddPost = (e) => {
@@ -189,7 +208,7 @@
               <h1 className="text-2xl font-light tracking-wide text-gray-800">Haven</h1>
             </div>
 
-            {/* Gentle Rain Synthesizer Button */}
+            {/* Slow Raindrop Synthesizer Button */}
             <button
               onClick={toggleRain}
               className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
@@ -199,7 +218,7 @@
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${isPlayingRain ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></span>
-              <span>{isPlayingRain ? 'Rain Playing' : 'Gentle Rain'}</span>
+              <span>{isPlayingRain ? 'Rain Playing' : 'Slow Raindrop'}</span>
             </button>
           </header>
 
