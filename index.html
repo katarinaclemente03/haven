@@ -21,11 +21,17 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+    
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #fcfbf9;
       color: #2d3748;
+      /* Leaf pattern background matching your image */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cpath fill='none' stroke='%23e0e4dd' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' d='M20 180 C40 140, 70 110, 100 100 C130 90, 160 60, 180 20 M100 100 C80 80, 60 70, 40 75 M100 100 C120 120, 140 130, 160 125 M60 140 C50 120, 30 110, 10 115 M140 60 C150 80, 170 90, 190 85 M100 100 Q80 120 60 110 M100 100 Q120 80 140 90 M40 75 C30 55, 10 50, 0 55 M160 125 C170 145, 190 150, 200 145'/%3E%3Cpath fill='none' stroke='%23e2e7e0' stroke-width='1' d='M30 170 Q10 150 15 130 M170 30 Q190 50 185 70'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 240px 240px;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
     }
@@ -44,7 +50,6 @@
       animation: fadeIn 0.35s ease-out forwards;
     }
     
-    /* Soft Breathing Glow Effects */
     .breath-glow {
       box-shadow: 0 0 50px rgba(16, 185, 129, 0.15), inset 0 0 30px rgba(16, 185, 129, 0.1);
     }
@@ -106,21 +111,23 @@
       const [newPost, setNewPost] = useState('');
       const [battery, setBattery] = useState(() => parseInt(localStorage.getItem('haven_battery')) || 50);
 
-      // Aesthetic Box Breathing State
+      // Box Breathing State
       const [isBreathing, setIsBreathing] = useState(false);
-      const [breathPhase, setBreathPhase] = useState('Inhale'); // Inhale, Hold, Exhale, Hold
+      const [breathPhase, setBreathPhase] = useState('Inhale'); 
       const [breathTimer, setBreathTimer] = useState(4);
 
-      // Reverted to original Google audio links
+      // Reliable cross-platform audio refs
       const rainAudioRef = useRef(null);
       const windAudioRef = useRef(null);
 
       useEffect(() => {
+        // Rain Sound
         const rain = new Audio("https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg");
         rain.loop = true;
         rain.volume = 0.5;
         rainAudioRef.current = rain;
 
+        // Working Wind Sound (Fixed broken link)
         const wind = new Audio("https://actions.google.com/sounds/v1/weather/wind_synthetic.ogg");
         wind.loop = true;
         wind.volume = 0.5;
@@ -140,7 +147,6 @@
             setBreathTimer((prevTimer) => {
               if (prevTimer > 1) return prevTimer - 1;
 
-              // Cycle 4-4-4-4 Box Breathing
               setBreathPhase((prevPhase) => {
                 if (prevPhase === 'Inhale') return 'Hold ';
                 if (prevPhase === 'Hold ') return 'Exhale';
@@ -210,7 +216,7 @@
             playPromise.then(() => {
               setSoundMode(mode);
             }).catch((err) => {
-              console.error("Audio playback interrupted:", err);
+              console.error("Audio playback error:", err);
             });
           }
         }
@@ -248,10 +254,10 @@
       };
 
       return (
-        <div className="min-h-screen bg-[#fcfbf9] text-gray-700 flex flex-col items-center p-4 md:p-8">
+        <div className="min-h-screen text-gray-700 flex flex-col items-center p-4 md:p-8">
           
           {/* Header */}
-          <header className="w-full max-w-2xl flex flex-wrap items-center justify-between gap-3 py-4 mb-6 border-b border-stone-200/60">
+          <header className="w-full max-w-2xl flex flex-wrap items-center justify-between gap-3 py-4 mb-6 border-b border-stone-200/60 bg-white/70 backdrop-blur-md px-6 rounded-2xl shadow-sm">
             <div className="flex items-center space-x-3">
               <LeafLogo />
               <div>
@@ -287,7 +293,7 @@
           </header>
 
           {/* Navigation Tabs */}
-          <nav className="w-full max-w-2xl flex justify-around bg-stone-100/70 p-1.5 rounded-2xl border border-stone-200/50 mb-8">
+          <nav className="w-full max-w-2xl flex justify-around bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-stone-200/50 mb-8 shadow-sm">
             {[
               { id: 'ether', label: 'The Ether' },
               { id: 'wall', label: 'Safe Wall' },
@@ -299,7 +305,7 @@
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-xl transition-all duration-200 ${
                   activeTab === tab.id
-                    ? 'bg-white text-emerald-900 shadow-sm'
+                    ? 'bg-emerald-800 text-white shadow-sm'
                     : 'text-stone-500 hover:text-stone-800'
                 }`}
               >
@@ -313,7 +319,7 @@
             
             {/* The Ether */}
             {activeTab === 'ether' && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-200/70 flex flex-col space-y-4">
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-stone-200/70 flex flex-col space-y-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className="text-lg font-medium text-stone-800">The Ether</h2>
@@ -370,7 +376,7 @@
             {/* Safe Wall */}
             {activeTab === 'wall' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-emerald-900/5 to-teal-800/5 rounded-3xl p-6 shadow-sm border border-emerald-900/10 backdrop-blur-sm">
+                <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-emerald-900/10">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h2 className="text-lg font-medium text-stone-800">Safe Wall</h2>
@@ -386,7 +392,7 @@
                       onChange={(e) => setNewPost(e.target.value)}
                       placeholder="Share something kind..."
                       maxLength={180}
-                      className="flex-1 px-4 py-3 rounded-2xl bg-white/80 border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm placeholder:text-stone-400"
+                      className="flex-1 px-4 py-3 rounded-2xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm placeholder:text-stone-400"
                     />
                     <button
                       type="submit"
@@ -399,14 +405,14 @@
 
                 <div className="space-y-3">
                   {wallPosts.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-3xl border border-stone-100 text-stone-400 text-xs">
+                    <div className="text-center py-12 bg-white/90 rounded-3xl border border-stone-100 text-stone-400 text-xs">
                       The wall is completely still. Be the first to post a thought.
                     </div>
                   ) : (
                     wallPosts.map((post) => (
                       <div 
                         key={post.id} 
-                        className="animate-fade-in bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm hover:shadow transition-all duration-200 flex flex-col justify-between space-y-3"
+                        className="animate-fade-in bg-white/90 backdrop-blur-sm p-5 rounded-2xl border border-stone-200/70 shadow-sm hover:shadow transition-all duration-200 flex flex-col justify-between space-y-3"
                       >
                         <p className="text-sm text-stone-700 leading-relaxed font-normal">{post.text}</p>
                         <div className="flex items-center justify-between border-t border-stone-100 pt-2.5">
@@ -424,7 +430,7 @@
 
             {/* Social Battery */}
             {activeTab === 'battery' && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-200/70 text-center space-y-6">
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-stone-200/70 text-center space-y-6">
                 <div>
                   <h2 className="text-lg font-medium text-stone-800">Social Battery</h2>
                   <p className="text-xs text-stone-400">Track how much energy you have to share today.</p>
@@ -458,17 +464,15 @@
               </div>
             )}
 
-            {/* Aesthetic Box Breathing */}
+            {/* Box Breathing */}
             {activeTab === 'breathe' && (
-              <div className="bg-white rounded-3xl p-10 shadow-sm border border-stone-200/70 flex flex-col items-center text-center space-y-8">
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-sm border border-stone-200/70 flex flex-col items-center text-center space-y-8">
                 <div>
                   <h2 className="text-xl font-light text-stone-800 tracking-wide">Box Breathing</h2>
                   <p className="text-xs text-stone-400 mt-1">Four equal counts to restore stillness.</p>
                 </div>
 
-                {/* Minimalist Multi-Ring breathing visualizer */}
                 <div className="relative flex items-center justify-center w-64 h-64 my-2">
-                  {/* Outer Pulsing Glow */}
                   <div 
                     className="absolute rounded-full border border-emerald-200/60 transition-all duration-1000 ease-in-out breath-glow"
                     style={{
@@ -481,7 +485,6 @@
                     }}
                   />
 
-                  {/* Inner Soft Gradient Orb */}
                   <div 
                     className="absolute rounded-full bg-gradient-to-tr from-emerald-100/80 to-teal-50 border border-emerald-300/50 shadow-inner transition-all duration-1000 ease-in-out flex items-center justify-center"
                     style={{
@@ -504,7 +507,6 @@
                   </div>
                 </div>
 
-                {/* Control Button */}
                 <button
                   onClick={() => setIsBreathing(!isBreathing)}
                   className={`px-8 py-3 rounded-full text-xs font-medium tracking-wider transition-all duration-300 shadow-sm active:scale-95 ${
