@@ -116,7 +116,6 @@
                     <h2 class="font-serif text-2xl text-slate-100 font-medium">Ambient Sound Synthesizer</h2>
                     <p class="text-sm text-slate-400 mt-1">Procedural audio calculated live in your browser.</p>
                 </div>
-                <div id="audio-status" class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full">Audio Inactive</div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -147,7 +146,7 @@
 
             <div class="flex items-center space-x-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
                 <i data-lucide="volume-2" class="w-5 h-5 text-slate-400"></i>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" oninput="adjustVolume(this.value)" class="w-full accent-emerald-500 bg-slate-700 rounded-lg cursor-pointer h-1.5">
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" oninput="adjustVolume(this.value)" class="w-full accent-emerald-500 bg-slate-700 rounded-lg cursor-pointer h-1.5">
                 <button onclick="stopAudio()" class="px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs rounded-lg font-medium transition-colors">Stop</button>
             </div>
         </section>
@@ -206,7 +205,7 @@
             textarea.value = '';
         }
 
-        // Web Audio API Ambient Synthesizer
+        // Audio Synthesizer Original Engine
         let audioCtx;
         let masterGain;
         let activeNoiseNode = null;
@@ -221,11 +220,9 @@
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-            document.getElementById('audio-status').innerText = 'Audio Active';
-            document.getElementById('audio-status').className = 'text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full';
         }
 
-        function createWhiteNoiseBuffer() {
+        function createNoiseBuffer() {
             const bufferSize = audioCtx.sampleRate * 2;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const output = buffer.getChannelData(0);
@@ -239,23 +236,23 @@
             initAudio();
             stopAudio();
 
-            const whiteNoiseBuffer = createWhiteNoiseBuffer();
+            const noiseBuffer = createNoiseBuffer();
             const noiseSource = audioCtx.createBufferSource();
-            noiseSource.buffer = whiteNoiseBuffer;
+            noiseSource.buffer = noiseBuffer;
             noiseSource.loop = true;
 
             const filter = audioCtx.createBiquadFilter();
 
             if (type === 'rain') {
                 filter.type = 'lowpass';
-                filter.frequency.value = 1000;
+                filter.frequency.value = 1800;
             } else if (type === 'ocean') {
                 filter.type = 'bandpass';
-                filter.frequency.value = 400;
-                filter.Q.value = 1.0;
+                filter.frequency.value = 800;
+                filter.Q.value = 0.8;
             } else if (type === 'forest') {
                 filter.type = 'lowpass';
-                filter.frequency.value = 600;
+                filter.frequency.value = 1200;
             }
 
             noiseSource.connect(filter);
