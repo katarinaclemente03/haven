@@ -1,572 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haven – Digital Sanctuary</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        sage: {
-                            50: '#f4f7f4',
-                            100: '#e3ebe3',
-                            200: '#c7d7c7',
-                            500: '#587a61',
-                            600: '#486851',
-                            700: '#3a5240',
-                        },
-                        sand: '#f9f8f6'
-                    },
-                    fontFamily: {
-                        serif: ['Playfair Display', 'serif'],
-                        sans: ['Plus Jakarta Sans', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #f7f6f4;
-            color: #2d3748;
-            min-height: 100vh;
-        }
-        
-        .light-card {
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(229, 231, 235, 0.8);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haven</title>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide-react@latest"></script>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-        /* Particle dissolve animation */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            animation: floatUp 2.8s ease-out forwards;
-            border-radius: 50%;
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 0.85; transform: translateY(0) scale(1); }
-            50% { opacity: 0.5; }
-            100% { opacity: 0; transform: translateY(-130px) scale(0.2); }
-        }
-
-        /* Breathing Circle Pulse */
-        .breath-circle {
-            transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), background-color 4s ease;
-        }
-
-        .breath-circle.inhale {
-            transform: scale(1.4);
-            background-color: rgba(88, 122, 97, 0.18);
-        }
-
-        .breath-circle.hold {
-            transform: scale(1.4);
-            background-color: rgba(88, 122, 97, 0.25);
-        }
-
-        .breath-circle.exhale {
-            transform: scale(1);
-            background-color: rgba(88, 122, 97, 0.08);
-        }
-
-        /* Custom Scrollbar for sleek appearance */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-    </style>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #fcfbf9;
+      color: #2d3748;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+  </style>
 </head>
-<body class="font-sans antialiased flex flex-col min-h-screen">
+<body>
+  <div id="root"></div>
 
-    <!-- Navigation Header -->
-    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100/80 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4">
-            
-            <!-- Logo Section with Leaf Badge -->
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('ether')">
-                <div class="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center text-sage-600 shadow-inner">
-                    <i data-lucide="leaf" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h1 class="font-serif text-xl font-bold text-gray-800 tracking-tight">Haven</h1>
-                    <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Your Digital Sanctuary</p>
-                </div>
-            </div>
+  <script type="text/babel">
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFOX_ChE_wPHNGyrLXGC2MiGCmAbe6rc",
+      authDomain: "haven-25b0b.firebaseapp.com",
+      databaseURL: "https://haven-25b0b-default-rtdb.firebaseio.com",
+      projectId: "haven-25b0b",
+      storageBucket: "haven-25b0b.firebasestorage.app",
+      messagingSenderId: "78209014568",
+      appId: "1:78209014568:web:b29094b308f8e1683b8e1d",
+      measurementId: "G-QZ3XKHX58M"
+    };
 
-            <!-- Functional Navigation Tabs -->
-            <nav class="flex items-center bg-gray-100/80 p-1.5 rounded-full text-xs font-medium text-gray-600 space-x-1 overflow-x-auto max-w-full">
-                <button id="tab-btn-ether" onclick="switchTab('ether')" class="tab-btn active flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                    <span>The Ether</span>
-                </button>
-                <button id="tab-btn-safewall" onclick="switchTab('safewall')" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200 hover:text-gray-900">
-                    <i data-lucide="heart" class="w-3.5 h-3.5"></i>
-                    <span>Safe Wall</span>
-                </button>
-                <button id="tab-btn-battery" onclick="switchTab('battery')" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200 hover:text-gray-900">
-                    <i data-lucide="battery-charging" class="w-3.5 h-3.5"></i>
-                    <span>Social Battery</span>
-                </button>
-                <button id="tab-btn-breathe" onclick="switchTab('breathe')" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200 hover:text-gray-900">
-                    <i data-lucide="wind" class="w-3.5 h-3.5"></i>
-                    <span>Breathe</span>
-                </button>
-            </nav>
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
 
-            <!-- Gentle Rain Audio Control -->
-            <div class="flex items-center space-x-3 bg-sage-50 px-4 py-1.5 rounded-full border border-sage-100">
-                <button id="rainToggleBtn" onclick="toggleRain()" class="flex items-center space-x-2 text-xs font-medium text-sage-700 hover:text-sage-600 transition-colors">
-                    <i data-lucide="cloud-rain" id="rainIcon" class="w-4 h-4 text-sage-500"></i>
-                    <span id="rainBtnText">Gentle Rain</span>
-                </button>
-                <div class="h-3 w-[1px] bg-sage-200"></div>
-                <div class="flex items-center space-x-1.5">
-                    <i data-lucide="volume-2" class="w-3.5 h-3.5 text-sage-500"></i>
-                    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" oninput="adjustVolume(this.value)" class="w-16 accent-sage-600 bg-gray-200 rounded-lg h-1 cursor-pointer">
-                </div>
-            </div>
+    const { useState, useEffect, useRef } = React;
 
-        </div>
-    </header>
+    // Gentle Leaf Logo SVG
+    const LeafLogo = () => (
+      <svg className="w-7 h-7 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+      </svg>
+    );
 
-    <!-- Main Content Container -->
-    <main class="flex-grow max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full">
+    function App() {
+      const [activeTab, setActiveTab] = useState('ether');
+      const [isPlayingRain, setIsPlayingRain] = useState(false);
+      
+      // Ether state (Private to local storage)
+      const [etherText, setEtherText] = useState(() => localStorage.getItem('haven_ether') || '');
+      
+      // Safe Wall state (Synced via Firebase)
+      const [wallPosts, setWallPosts] = useState([]);
+      const [newPost, setNewPost] = useState('');
+      
+      // Social Battery state
+      const [battery, setBattery] = useState(() => parseInt(localStorage.getItem('haven_battery')) || 50);
 
-        <!-- VIEW 1: THE ETHER -->
-        <section id="view-ether" class="tab-view space-y-8">
-            <div class="text-center space-y-3">
-                <h2 class="font-serif text-3xl sm:text-4xl text-gray-800 font-normal">The Ether</h2>
-                <p class="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
-                    A peaceful, unjudged space. Express what weighs on your heart. Save it quietly to your private journal, or dissolve it into light particles and let it go forever.
-                </p>
-            </div>
+      // Audio Synthesizer for Gentle Rain
+      const audioCtxRef = useRef(null);
+      const rainSourceRef = useRef(null);
 
-            <div class="light-card p-6 sm:p-8 relative overflow-hidden space-y-6">
-                <input id="entry-title" type="text" placeholder="Give your entry a title (optional)..." class="w-full text-base sm:text-lg font-serif placeholder-sage-500/50 text-gray-800 bg-transparent border-b border-gray-100 pb-3 focus:outline-none focus:border-sage-500 transition-colors">
+      // Save Ether text locally
+      useEffect(() => {
+        localStorage.setItem('haven_ether', etherText);
+      }, [etherText]);
 
-                <textarea id="entry-body" oninput="updateWordCount()" placeholder="Begin writing here... No rules, no judgments." class="w-full h-52 sm:h-60 bg-transparent text-gray-700 placeholder-sage-500/50 focus:outline-none resize-none leading-relaxed text-sm"></textarea>
+      // Save Battery locally
+      useEffect(() => {
+        localStorage.setItem('haven_battery', battery.toString());
+      }, [battery]);
 
-                <div class="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-gray-100 gap-4">
-                    <span id="word-count" class="text-xs text-gray-400 italic">0 words</span>
-                    
-                    <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
-                        <button onclick="saveToJournal()" class="px-5 py-2.5 rounded-full border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                            <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
-                            <span>Save to Journal</span>
-                        </button>
+      // Connect to Firebase Realtime Database for Safe Wall
+      useEffect(() => {
+        const postsRef = db.ref('posts');
+        postsRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const formatted = Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            })).reverse();
+            setWallPosts(formatted);
+          } else {
+            setWallPosts([]);
+          }
+        });
 
-                        <button onclick="releaseToEther(event)" class="px-5 py-2.5 rounded-full bg-sage-600 hover:bg-sage-700 text-white text-xs font-medium transition-all shadow-sm flex items-center space-x-2">
-                            <i data-lucide="wind" class="w-3.5 h-3.5"></i>
-                            <span>Release to Ether</span>
-                        </button>
-                    </div>
-                </div>
+        return () => postsRef.off();
+      }, []);
 
-                <div id="particle-container" class="absolute inset-0 pointer-events-none"></div>
-            </div>
+      // Toggle Synthesized Gentle Rain Audio
+      const toggleRain = () => {
+        if (isPlayingRain) {
+          if (audioCtxRef.current) {
+            audioCtxRef.current.close();
+            audioCtxRef.current = null;
+          }
+          setIsPlayingRain(false);
+        } else {
+          try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioContext();
+            audioCtxRef.current = ctx;
 
-            <!-- Saved Entries Quick View -->
-            <div id="journal-archive-section" class="hidden space-y-4 pt-4">
-                <h3 class="font-serif text-lg text-gray-700 flex items-center space-x-2">
-                    <i data-lucide="book-open" class="w-4 h-4 text-sage-600"></i>
-                    <span>Quiet Journal Entries</span>
-                </h3>
-                <div id="journal-entries-list" class="space-y-3"></div>
-            </div>
-        </section>
-
-        <!-- VIEW 2: SAFE WALL -->
-        <section id="view-safewall" class="tab-view hidden space-y-8">
-            <div class="text-center space-y-3">
-                <h2 class="font-serif text-3xl sm:text-4xl text-gray-800 font-normal">Safe Wall</h2>
-                <p class="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
-                    Leave gentle, anonymous reflections for anyone who might need a quiet word of comfort today.
-                </p>
-            </div>
-
-            <div class="light-card p-6 space-y-4">
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <input id="musing-input" type="text" placeholder="Share a gentle reflection or note..." class="flex-grow bg-sage-50/60 border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-sage-500 transition-colors">
-                    <button onclick="postMusing()" class="bg-sage-600 hover:bg-sage-700 text-white px-6 py-3 rounded-2xl text-xs font-medium transition-all flex items-center justify-center space-x-2 shadow-sm">
-                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                        <span>Post</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="musing-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="light-card p-5 space-y-2 relative group hover:border-sage-200 transition-all">
-                    <div class="text-sage-600"><i data-lucide="quote" class="w-4 h-4"></i></div>
-                    <p class="text-sm text-gray-700 leading-relaxed">"You don't have to explain your quietness to anyone."</p>
-                    <span class="text-[10px] text-gray-400 block pt-2">Anonymous • Just now</span>
-                </div>
-                <div class="light-card p-5 space-y-2 relative group hover:border-sage-200 transition-all">
-                    <div class="text-sage-600"><i data-lucide="quote" class="w-4 h-4"></i></div>
-                    <p class="text-sm text-gray-700 leading-relaxed">"Breathing gently into this evening. It's enough just to be here."</p>
-                    <span class="text-[10px] text-gray-400 block pt-2">Anonymous • 12m ago</span>
-                </div>
-                <div class="light-card p-5 space-y-2 relative group hover:border-sage-200 transition-all">
-                    <div class="text-sage-600"><i data-lucide="quote" class="w-4 h-4"></i></div>
-                    <p class="text-sm text-gray-700 leading-relaxed">"Rest is not a reward. It is a fundamental requirement."</p>
-                    <span class="text-[10px] text-gray-400 block pt-2">Anonymous • 1h ago</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 3: SOCIAL BATTERY -->
-        <section id="view-battery" class="tab-view hidden space-y-8">
-            <div class="text-center space-y-3">
-                <h2 class="font-serif text-3xl sm:text-4xl text-gray-800 font-normal">Social Battery</h2>
-                <p class="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
-                    Check in with your energy levels today. Honor when you need time to recharge.
-                </p>
-            </div>
-
-            <div class="light-card p-8 space-y-8 text-center">
-                <!-- Visual Gauge Display -->
-                <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
-                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                        <path class="text-gray-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path id="battery-circle" class="text-sage-500 transition-all duration-700 stroke-current" stroke-dasharray="60, 100" stroke-width="3" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    </svg>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span id="battery-percentage" class="font-serif text-4xl font-semibold text-gray-800">60%</span>
-                        <span id="battery-status-text" class="text-xs font-medium text-sage-600 mt-1">Balanced Energy</span>
-                    </div>
-                </div>
-
-                <!-- Interactive Battery Bar -->
-                <div class="max-w-md mx-auto space-y-2">
-                    <div class="w-full bg-sage-50 rounded-full h-4 p-0.5 border border-sage-100">
-                        <div id="battery-bar" class="bg-sage-500 h-full rounded-full transition-all duration-500" style="width: 60%;"></div>
-                    </div>
-                </div>
-
-                <!-- Drain / Recharge Controls -->
-                <div class="flex justify-center items-center gap-4 pt-2">
-                    <button onclick="updateBattery(-10)" class="px-5 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors flex items-center space-x-1.5 shadow-sm">
-                        <i data-lucide="minus-circle" class="w-4 h-4 text-gray-400"></i>
-                        <span>Drain (-10%)</span>
-                    </button>
-                    <button onclick="updateBattery(10)" class="px-5 py-2.5 bg-sage-600 hover:bg-sage-700 text-white rounded-full text-xs font-medium transition-colors flex items-center space-x-1.5 shadow-sm">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span>Recharge (+10%)</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 4: BREATHE -->
-        <section id="view-breathe" class="tab-view hidden space-y-8">
-            <div class="text-center space-y-3">
-                <h2 class="font-serif text-3xl sm:text-4xl text-gray-800 font-normal">Box Breathing</h2>
-                <p class="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
-                    Follow the circle to slow down your nervous system. Inhale, hold, and release.
-                </p>
-            </div>
-
-            <div class="light-card p-10 flex flex-col items-center justify-center space-y-8 min-h-[360px]">
-                <!-- Breathing Animation Visual -->
-                <div class="relative w-44 h-44 flex items-center justify-center">
-                    <div id="breath-circle" class="breath-circle absolute inset-0 rounded-full bg-sage-100 border border-sage-200/60"></div>
-                    <span id="breath-instruction" class="relative font-serif text-xl font-medium text-sage-700">Ready</span>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex items-center space-x-4">
-                    <button id="breatheToggleBtn" onclick="toggleBreathing()" class="px-6 py-3 rounded-full bg-sage-600 hover:bg-sage-700 text-white text-xs font-medium transition-all shadow-sm flex items-center space-x-2">
-                        <i data-lucide="play" id="breathBtnIcon" class="w-4 h-4"></i>
-                        <span id="breathBtnText">Begin Exercise</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
-
-        // Single Page App View Switcher
-        function switchTab(tabId) {
-            // Hide all views
-            document.querySelectorAll('.tab-view').forEach(view => {
-                view.classList.add('hidden');
-            });
-
-            // Reset tab button styling
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = 'tab-btn flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200 hover:text-gray-900 text-gray-600';
-            });
-
-            // Activate selected tab view & button
-            const targetView = document.getElementById(`view-${tabId}`);
-            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
-
-            if(targetView && targetBtn) {
-                targetView.classList.remove('hidden');
-                targetBtn.className = 'tab-btn active flex items-center space-x-2 px-4 py-2 rounded-full bg-white text-gray-900 shadow-sm font-semibold';
-            }
-        }
-
-        // --- WORD COUNT & JOURNAL LOGIC ---
-        function updateWordCount() {
-            const text = document.getElementById('entry-body').value.trim();
-            const words = text ? text.split(/\s+/).length : 0;
-            document.getElementById('word-count').innerText = `${words} words`;
-        }
-
-        let savedEntries = [];
-        function saveToJournal() {
-            const body = document.getElementById('entry-body').value.trim();
-            const title = document.getElementById('entry-title').value.trim() || 'Untitled Reflection';
-            
-            if(!body) return;
-
-            savedEntries.unshift({ title, body, date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-            renderJournalEntries();
-
-            document.getElementById('entry-title').value = '';
-            document.getElementById('entry-body').value = '';
-            updateWordCount();
-        }
-
-        function renderJournalEntries() {
-            const container = document.getElementById('journal-entries-list');
-            const section = document.getElementById('journal-archive-section');
-            if(savedEntries.length === 0) {
-                section.classList.add('hidden');
-                return;
-            }
-            section.classList.remove('hidden');
-            container.innerHTML = savedEntries.map(e => `
-                <div class="light-card p-4 space-y-1">
-                    <div class="flex justify-between items-center">
-                        <h4 class="font-serif font-medium text-sm text-gray-800">${escapeHtml(e.title)}</h4>
-                        <span class="text-[10px] text-gray-400">${e.date}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 leading-relaxed">${escapeHtml(e.body)}</p>
-                </div>
-            `).join('');
-        }
-
-        function releaseToEther(e) {
-            const body = document.getElementById('entry-body');
-            const title = document.getElementById('entry-title');
-            if(!body.value.trim() && !title.value.trim()) return;
-
-            const container = document.getElementById('particle-container');
-            const rect = e.target.getBoundingClientRect();
-
-            for(let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle bg-sage-500';
-                const size = Math.random() * 6 + 4;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                particle.style.left = (Math.random() * 260 - 130) + (rect.left - container.getBoundingClientRect().left) + 'px';
-                particle.style.top = (rect.top - container.getBoundingClientRect().top) + 'px';
-                container.appendChild(particle);
-
-                setTimeout(() => particle.remove(), 2800);
-            }
-
-            title.value = '';
-            body.value = '';
-            updateWordCount();
-        }
-
-        // --- SAFE WALL (MUSINGS) LOGIC ---
-        function postMusing() {
-            const input = document.getElementById('musing-input');
-            const text = input.value.trim();
-            if(!text) return;
-
-            const list = document.getElementById('musing-list');
-            const card = document.createElement('div');
-            card.className = 'light-card p-5 space-y-2 relative group hover:border-sage-200 transition-all';
-            card.innerHTML = `
-                <div class="text-sage-600"><i data-lucide="quote" class="w-4 h-4"></i></div>
-                <p class="text-sm text-gray-700 leading-relaxed">"${escapeHtml(text)}"</p>
-                <span class="text-[10px] text-gray-400 block pt-2">Anonymous • Just now</span>
-            `;
-            list.prepend(card);
-            lucide.createIcons();
-            input.value = '';
-        }
-
-        // --- SOCIAL BATTERY LOGIC ---
-        let batteryLevel = 60;
-        function updateBattery(val) {
-            batteryLevel = Math.max(0, Math.min(100, batteryLevel + val));
-            
-            document.getElementById('battery-bar').style.width = batteryLevel + '%';
-            document.getElementById('battery-percentage').innerText = batteryLevel + '%';
-            document.getElementById('battery-circle').setAttribute('stroke-dasharray', `${batteryLevel}, 100`);
-
-            const statusText = document.getElementById('battery-status-text');
-            if(batteryLevel <= 20) {
-                statusText.innerText = "Needs Quiet & Rest";
-                statusText.className = "text-xs font-medium text-amber-600 mt-1";
-            } else if(batteryLevel <= 60) {
-                statusText.innerText = "Balanced Energy";
-                statusText.className = "text-xs font-medium text-sage-600 mt-1";
-            } else {
-                statusText.innerText = "Fully Recharged";
-                statusText.className = "text-xs font-medium text-emerald-700 mt-1";
-            }
-        }
-
-        // --- BREATHE EXERCISE LOGIC ---
-        let isBreathing = false;
-        let breathInterval = null;
-
-        function toggleBreathing() {
-            if(isBreathing) {
-                stopBreathing();
-            } else {
-                startBreathing();
-            }
-        }
-
-        function startBreathing() {
-            isBreathing = true;
-            document.getElementById('breathBtnText').innerText = 'Stop Exercise';
-            document.getElementById('breathBtnIcon').setAttribute('data-lucide', 'square');
-            lucide.createIcons();
-
-            runBreathingCycle();
-            breathInterval = setInterval(runBreathingCycle, 12000); // 4s inhale, 4s hold, 4s exhale
-        }
-
-        function runBreathingCycle() {
-            const circle = document.getElementById('breath-circle');
-            const label = document.getElementById('breath-instruction');
-
-            // Phase 1: Inhale (4s)
-            circle.className = 'breath-circle inhale absolute inset-0 rounded-full bg-sage-100 border border-sage-200/60';
-            label.innerText = 'Inhale...';
-
-            // Phase 2: Hold (4s)
-            setTimeout(() => {
-                if(!isBreathing) return;
-                circle.className = 'breath-circle hold absolute inset-0 rounded-full bg-sage-100 border border-sage-200/60';
-                label.innerText = 'Hold...';
-            }, 4000);
-
-            // Phase 3: Exhale (4s)
-            setTimeout(() => {
-                if(!isBreathing) return;
-                circle.className = 'breath-circle exhale absolute inset-0 rounded-full bg-sage-100 border border-sage-200/60';
-                label.innerText = 'Exhale...';
-            }, 8000);
-        }
-
-        function stopBreathing() {
-            isBreathing = false;
-            clearInterval(breathInterval);
-            const circle = document.getElementById('breath-circle');
-            const label = document.getElementById('breath-instruction');
-
-            circle.className = 'breath-circle absolute inset-0 rounded-full bg-sage-100 border border-sage-200/60';
-            label.innerText = 'Ready';
-
-            document.getElementById('breathBtnText').innerText = 'Begin Exercise';
-            document.getElementById('breathBtnIcon').setAttribute('data-lucide', 'play');
-            lucide.createIcons();
-        }
-
-        // --- GENTLE RAIN AUDIO SYNTHESIZER ---
-        let audioCtx = null;
-        let masterGain = null;
-        let noiseSource = null;
-        let isRainPlaying = false;
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                masterGain = audioCtx.createGain();
-                masterGain.gain.value = document.getElementById('volumeSlider').value;
-                masterGain.connect(audioCtx.destination);
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function toggleRain() {
-            initAudio();
-            if (isRainPlaying) {
-                stopRain();
-            } else {
-                startRain();
-            }
-        }
-
-        function startRain() {
-            const bufferSize = audioCtx.sampleRate * 2;
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const output = buffer.getChannelData(0);
+            const bufferSize = ctx.sampleRate * 2;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
-                output[i] = Math.random() * 2 - 1;
+              output[i] = Math.random() * 2 - 1;
             }
 
-            noiseSource = audioCtx.createBufferSource();
-            noiseSource.buffer = buffer;
-            noiseSource.loop = true;
+            const whiteNoise = ctx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
 
-            const filter = audioCtx.createBiquadFilter();
+            const filter = ctx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = 1600;
+            filter.frequency.value = 800;
 
-            noiseSource.connect(filter);
-            filter.connect(masterGain);
-            noiseSource.start();
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = 0.15;
 
-            isRainPlaying = true;
-            document.getElementById('rainBtnText').innerText = 'Pause Rain';
+            whiteNoise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            whiteNoise.start();
+            rainSourceRef.current = whiteNoise;
+            setIsPlayingRain(true);
+          } catch (e) {
+            console.error("Audio playback error:", e);
+          }
         }
+      };
 
-        function stopRain() {
-            if (noiseSource) {
-                noiseSource.stop();
-                noiseSource.disconnect();
-                noiseSource = null;
-            }
-            isRainPlaying = false;
-            document.getElementById('rainBtnText').innerText = 'Gentle Rain';
-        }
+      // Post to Firebase Safe Wall
+      const handleAddPost = (e) => {
+        e.preventDefault();
+        if (!newPost.trim()) return;
 
-        function adjustVolume(val) {
-            if (masterGain) {
-                masterGain.gain.value = val;
-            }
-        }
+        db.ref('posts').push({
+          text: newPost.trim(),
+          timestamp: Date.now()
+        });
 
-        function escapeHtml(str) {
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-    </script>
+        setNewPost('');
+      };
+
+      return (
+        <div className="min-h-screen bg-[#fcfbf9] text-gray-700 flex flex-col items-center p-4 md:p-8">
+          
+          {/* Header */}
+          <header className="w-full max-w-2xl flex items-center justify-between py-4 mb-6 border-b border-gray-100">
+            <div className="flex items-center space-x-3">
+              <LeafLogo />
+              <h1 className="text-2xl font-light tracking-wide text-gray-800">Haven</h1>
+            </div>
+
+            {/* Gentle Rain Synthesizer Button */}
+            <button
+              onClick={toggleRain}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                isPlayingRain 
+                  ? 'bg-emerald-100 text-emerald-800 shadow-sm' 
+                  : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${isPlayingRain ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></span>
+              <span>{isPlayingRain ? 'Rain Playing' : 'Gentle Rain'}</span>
+            </button>
+          </header>
+
+          {/* Navigation Tabs */}
+          <nav className="w-full max-w-2xl flex justify-around bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            {[
+              { id: 'ether', label: 'The Ether' },
+              { id: 'wall', label: 'Safe Wall' },
+              { id: 'battery', label: 'Social Battery' },
+              { id: 'breathe', label: 'Breathe' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-xl transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-[#f4f7f4] text-emerald-800 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Content Area */}
+          <main className="w-full max-w-2xl">
+            
+            {/* Tab 1: The Ether (Private Journal) */}
+            {activeTab === 'ether' && (
+              <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-800">The Ether</h2>
+                    <p className="text-xs text-gray-400">Write freely. Stored privately on your device.</p>
+                  </div>
+                  <button 
+                    onClick={() => setEtherText('')}
+                    className="text-xs text-gray-400 hover:text-rose-500 transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <textarea
+                  value={etherText}
+                  onChange={(e) => setEtherText(e.target.value)}
+                  placeholder="Type your quiet thoughts here..."
+                  className="w-full h-64 p-4 rounded-2xl bg-[#faf9f6] border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 resize-none text-sm text-gray-700 leading-relaxed custom-scrollbar"
+                />
+              </div>
+            )}
+
+            {/* Tab 2: Safe Wall (Global Anonymous Feed) */}
+            {activeTab === 'wall' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                  <h2 className="text-lg font-medium text-gray-800 mb-1">Safe Wall</h2>
+                  <p className="text-xs text-gray-400 mb-4">Share a gentle note anonymously with the world.</p>
+                  <form onSubmit={handleAddPost} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newPost}
+                      onChange={(e) => setNewPost(e.target.value)}
+                      placeholder="Leave an anonymous note..."
+                      maxLength={180}
+                      className="flex-1 px-4 py-2.5 rounded-2xl bg-[#faf9f6] border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm"
+                    />
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-2xl transition-all shadow-sm"
+                    >
+                      Post
+                    </button>
+                  </form>
+                </div>
+
+                <div className="space-y-3">
+                  {wallPosts.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400 text-xs">
+                      No posts on the wall yet. Be the first to leave a gentle thought.
+                    </div>
+                  ) : (
+                    wallPosts.map((post) => (
+                      <div key={post.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-2">
+                        <p className="text-sm text-gray-700 leading-relaxed">{post.text}</p>
+                        <span className="text-[10px] text-gray-400 self-end">
+                          {new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3: Social Battery */}
+            {activeTab === 'battery' && (
+              <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 text-center space-y-6">
+                <div>
+                  <h2 className="text-lg font-medium text-gray-800">Social Battery</h2>
+                  <p className="text-xs text-gray-400">Track how much energy you have to share today.</p>
+                </div>
+
+                <div className="py-6 flex flex-col items-center justify-center space-y-4">
+                  <div className="text-4xl font-light text-emerald-700">{battery}%</div>
+                  <div className="w-full max-w-xs bg-gray-100 h-4 rounded-full overflow-hidden p-0.5">
+                    <div 
+                      className="bg-emerald-500 h-full rounded-full transition-all duration-300" 
+                      style={{ width: `${battery}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-center space-x-3">
+                  {[0, 25, 50, 75, 100].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => setBattery(val)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+                        battery === val 
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' 
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {val}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab 4: Breathe */}
+            {activeTab === 'breathe' && (
+              <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6">
+                <div>
+                  <h2 className="text-lg font-medium text-gray-800">Box Breathing</h2>
+                  <p className="text-xs text-gray-400">Inhale, hold, exhale, hold.</p>
+                </div>
+
+                <div className="w-40 h-40 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center relative animate-pulse">
+                  <div className="w-28 h-28 rounded-full bg-emerald-100/60 flex items-center justify-center">
+                    <span className="text-xs font-medium text-emerald-800">Relax</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
