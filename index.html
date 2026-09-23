@@ -101,12 +101,27 @@
       const [newPost, setNewPost] = useState('');
       const [battery, setBattery] = useState(() => parseInt(localStorage.getItem('haven_battery')) || 50);
 
-      const audioRef = useRef(null);
+      // Pre-instantiated audio references for mobile support
+      const rainAudioRef = useRef(null);
+      const windAudioRef = useRef(null);
 
-      const soundUrls = {
-        rain: "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg",
-        wind: "https://actions.google.com/sounds/v1/weather/wind_synthetic.ogg"
-      };
+      useEffect(() => {
+        // Initialize mobile-friendly audio elements on mount
+        const rain = new Audio("https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg");
+        rain.loop = true;
+        rain.volume = 0.5;
+        rainAudioRef.current = rain;
+
+        const wind = new Audio("https://actions.google.com/sounds/v1/weather/wind_synthetic.ogg");
+        wind.loop = true;
+        wind.volume = 0.5;
+        windAudioRef.current = wind;
+
+        return () => {
+          rain.pause();
+          wind.pause();
+        };
+      }, []);
 
       useEffect(() => {
         localStorage.setItem('haven_ether', etherText);
@@ -138,38 +153,32 @@
         return () => postsRef.off();
       }, []);
 
+      // Mobile-optimized audio trigger directly attached to user tap
       const toggleSound = (mode) => {
+        const rain = rainAudioRef.current;
+        const wind = windAudioRef.current;
+
+        // Turn off if tapping the same sound
         if (soundMode === mode) {
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current = null;
-          }
+          if (rain) rain.pause();
+          if (wind) wind.pause();
           setSoundMode('off');
           return;
         }
 
-        if (audioRef.current) {
-          audioRef.current.pause();
+        // Pause existing audio first
+        if (rain) rain.pause();
+        if (wind) wind.pause();
+
+        const targetAudio = mode === 'rain' ? rain : wind;
+        if (targetAudio) {
+          targetAudio.play().then(() => {
+            setSoundMode(mode);
+          }).catch((err) => {
+            console.error("Mobile audio play failed:", err);
+          });
         }
-
-        const audio = new Audio(soundUrls[mode]);
-        audio.loop = true;
-        audio.volume = 0.45;
-        audio.play().then(() => {
-          audioRef.current = audio;
-          setSoundMode(mode);
-        }).catch(err => {
-          console.error("Audio block error:", err);
-        });
       };
-
-      useEffect(() => {
-        return () => {
-          if (audioRef.current) {
-            audioRef.current.pause();
-          }
-        };
-      }, []);
 
       const handleSaveToJournal = () => {
         if (!etherText.trim()) return;
