@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haven — Digital Sanctuary</title>
+    <title>Haven – Digital Sanctuary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
@@ -31,623 +31,264 @@
     </script>
     <style>
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at 50% 0%, #151d30 0%, #0b0f19 70%);
-            color: #e2e8f0;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 60%, #0b0f19 100%);
+            color: #f3f4f6;
             min-height: 100vh;
-            overflow-x: hidden;
         }
-
-        .glass-panel {
-            background: rgba(17, 24, 39, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
-
-        .glow-button-emerald {
-            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        .glow-btn {
+            transition: all 0.3s ease;
         }
-
-        .glow-button-emerald:hover {
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+        .glow-btn:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
         }
-
-        .glow-button-lavender {
-            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
-        }
-
-        .tab-active {
-            background: rgba(255, 255, 255, 0.1);
-            color: #38bdf8;
-            border-bottom: 2px solid #38bdf8;
-        }
-
-        canvas#particleCanvas {
+        .particle {
             position: absolute;
-            inset: 0;
             pointer-events: none;
-            z-index: 20;
-        }
-
-        .breath-ring {
-            transition: all 4s ease-in-out;
-        }
-
-        /* Ambient floating background elements */
-        .ambient-orb {
-            position: fixed;
+            animation: floatUp 3s ease-out forwards;
             border-radius: 50%;
-            filter: blur(90px);
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.35;
-            animation: floatOrb 20s infinite alternate ease-in-out;
         }
-
-        @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(60px, 40px) scale(1.1); }
-            100% { transform: translate(-40px, 80px) scale(0.9); }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-120px) scale(0.2); }
         }
     </style>
 </head>
-<body class="relative min-h-screen flex flex-col justify-between selection:bg-emerald-500/30 selection:text-emerald-200">
+<body class="font-sans antialiased flex flex-col min-h-screen">
 
-    <!-- Ambient Floating Orbs -->
-    <div class="ambient-orb w-[500px] h-[500px] bg-emerald-900/40 top-[-100px] left-[-100px]"></div>
-    <div class="ambient-orb w-[600px] h-[600px] bg-indigo-950/50 bottom-[-150px] right-[-150px]" style="animation-delay: -7s;"></div>
-    <div class="ambient-orb w-[400px] h-[400px] bg-teal-900/30 top-[30%] right-[10%]" style="animation-delay: -14s;"></div>
-
-    <div class="relative z-10 flex flex-col min-h-screen">
-        <header class="border-b border-white/10 glass-panel sticky top-0 z-40 px-6 py-4">
-            <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                        <i data-lucide="feather" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-serif text-2xl font-semibold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-emerald-200 via-teal-200 to-indigo-200">Haven</h1>
-                        <p class="text-xs text-slate-400">Digital Sanctuary & Mindful Space</p>
-                    </div>
-                </div>
-
-                <!-- Navigation Tabs -->
-                <nav class="flex items-center bg-slate-900/60 p-1.5 rounded-2xl border border-white/5 text-xs sm:text-sm font-medium">
-                    <button onclick="switchTab('ether')" id="nav-ether" class="tab-active px-4 py-2 rounded-xl transition-all flex items-center gap-2">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Ether Journal</span>
-                    </button>
-                    <button onclick="switchTab('wall')" id="nav-wall" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-                        <i data-lucide="message-square-heart" class="w-4 h-4"></i>
-                        <span>Safe Wall</span>
-                    </button>
-                    <button onclick="switchTab('battery')" id="nav-battery" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-                        <i data-lucide="battery-charging" class="w-4 h-4"></i>
-                        <span>Social Battery</span>
-                    </button>
-                    <button onclick="switchTab('breathe')" id="nav-breathe" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-                        <i data-lucide="wind" class="w-4 h-4"></i>
-                        <span>Breathing</span>
-                    </button>
-                </nav>
+    <!-- Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="shield" class="w-6 h-6 text-emerald-400"></i>
+                <span class="font-serif text-xl font-medium tracking-wide text-slate-100">Haven</span>
             </div>
-        </header>
-
-        <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
-
-            <!-- TAB 1: ETHER JOURNAL -->
-            <section id="sec-ether" class="space-y-6">
-                <div class="text-center max-w-lg mx-auto space-y-2">
-                    <h2 class="font-serif text-3xl font-medium text-slate-100">The Ether Journal</h2>
-                    <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">Write what you need to express. Press <span class="text-emerald-400 font-medium">"Release into Ether"</span> to dissolve your thoughts into glowing particles, or store them privately on your device.</p>
-                </div>
-
-                <div class="relative glass-panel rounded-3xl p-6 sm:p-8 overflow-hidden transition-all duration-300">
-                    <canvas id="particleCanvas"></canvas>
-                    
-                    <div id="journalCard" class="relative z-10 space-y-4">
-                        <input type="text" id="journalTitle" placeholder="Reflection Title (Optional)..." class="w-full bg-transparent border-b border-white/10 pb-2 text-lg font-serif text-slate-100 focus:outline-none focus:border-emerald-500 placeholder-slate-600 transition-colors">
-                        
-                        <textarea id="journalText" rows="7" placeholder="Type your unfiltered thoughts, boundary reminders, or unspoken feelings..." class="w-full bg-transparent text-slate-200 placeholder-slate-600 resize-none focus:outline-none text-base leading-relaxed font-sans"></textarea>
-                        
-                        <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
-                            <span class="text-xs text-slate-500" id="wordCount">0 words</span>
-                            
-                            <div class="flex items-center gap-3">
-                                <button onclick="savePrivateNote()" class="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-white/10 text-xs sm:text-sm font-medium transition-all flex items-center gap-2">
-                                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-                                    <span>Save Privately</span>
-                                </button>
-                                
-                                <button onclick="releaseToEther()" class="px-5 py-2.5 rounded-xl glow-button-emerald text-white text-xs sm:text-sm font-medium transition-all flex items-center gap-2">
-                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                                    <span>Release into Ether</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Private Saved Notes -->
-                <div class="space-y-4 pt-6">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-serif text-lg text-slate-300 flex items-center gap-2">
-                            <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
-                            <span>Private Sanctuary Vault</span>
-                        </h3>
-                        <span id="privateCount" class="text-xs bg-slate-800 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20 font-medium">0 notes</span>
-                    </div>
-
-                    <div id="privateNoteList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Populated by JavaScript -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 2: SAFE WALL -->
-            <section id="sec-wall" class="hidden space-y-6">
-                <div class="text-center max-w-lg mx-auto space-y-2">
-                    <h2 class="font-serif text-3xl font-medium text-slate-100">Musings & Quiet Reflections</h2>
-                    <p class="text-xs sm:text-sm text-slate-400">Anonymous boundary reminders and soft reflections left by other gentle souls.</p>
-                </div>
-
-                <div class="flex justify-center">
-                    <button onclick="openMusingModal()" class="px-5 py-2.5 rounded-xl bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-200 border border-indigo-500/30 text-xs sm:text-sm font-medium transition-all flex items-center gap-2 shadow-lg">
-                        <i data-lucide="pen-tool" class="w-4 h-4"></i>
-                        <span>Leave an Anonymous Reflection</span>
-                    </button>
-                </div>
-
-                <div id="wallGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                    <!-- Populated by JavaScript -->
-                </div>
-            </section>
-
-            <!-- TAB 3: SOCIAL BATTERY -->
-            <section id="sec-battery" class="hidden space-y-8">
-                <div class="text-center max-w-lg mx-auto space-y-2">
-                    <h2 class="font-serif text-3xl font-medium text-slate-100">Social Battery & Boundaries</h2>
-                    <p class="text-xs sm:text-sm text-slate-400">Check in with your energy. Protecting your battery is an act of self-care.</p>
-                </div>
-
-                <div class="glass-panel rounded-3xl p-6 sm:p-10 max-w-xl mx-auto space-y-8 relative overflow-hidden">
-                    <div class="text-center space-y-3">
-                        <div class="inline-flex items-center justify-center w-28 h-28 rounded-full bg-slate-900/80 border border-emerald-500/30 shadow-2xl relative">
-                            <span id="batteryPercent" class="font-serif text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">50%</span>
-                        </div>
-                        <h3 id="batteryStatus" class="text-lg font-medium text-slate-200">Selective Energy</h3>
-                    </div>
-
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-xs text-slate-400 font-medium">
-                            <span>0% (Drained)</span>
-                            <span>50% (Low-key)</span>
-                            <span>100% (Energized)</span>
-                        </div>
-                        <input type="range" id="batterySlider" min="0" max="100" value="50" oninput="updateBattery(this.value)" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400">
-                    </div>
-
-                    <div id="batteryGuidance" class="p-5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-                        <!-- Populated by JavaScript -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 4: BREATHING & AMBIENT SOUNDS -->
-            <section id="sec-breathe" class="hidden space-y-8">
-                <div class="text-center max-w-lg mx-auto space-y-2">
-                    <h2 class="font-serif text-3xl font-medium text-slate-100">Breathing & Grounding</h2>
-                    <p class="text-xs sm:text-sm text-slate-400">Regulate your nervous system with box breathing and ambient soundscapes.</p>
-                </div>
-
-                <!-- Ambient Sound Generator Controls -->
-                <div class="glass-panel rounded-2xl p-4 max-w-2xl mx-auto flex flex-wrap items-center justify-around gap-4 text-xs font-medium">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="cloud-rain" class="w-4 h-4 text-teal-400"></i>
-                        <span>Rain</span>
-                        <button onclick="toggleAudio('rain')" id="btn-rain" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Play</button>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="waves" class="w-4 h-4 text-indigo-400"></i>
-                        <span>Ocean Waves</span>
-                        <button onclick="toggleAudio('ocean')" id="btn-ocean" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Play</button>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="trees" class="w-4 h-4 text-emerald-400"></i>
-                        <span>Forest Wind</span>
-                        <button onclick="toggleAudio('forest')" id="btn-forest" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Play</button>
-                    </div>
-                </div>
-
-                <!-- Visual Breathing Circle -->
-                <div class="glass-panel rounded-3xl p-8 sm:p-12 text-center max-w-xl mx-auto space-y-8">
-                    <div class="relative w-64 h-64 mx-auto flex items-center justify-center">
-                        <div id="breathOuter" class="absolute inset-0 rounded-full border border-emerald-500/20"></div>
-                        <div id="breathCircle" class="breath-ring w-32 h-32 rounded-full bg-gradient-to-br from-emerald-500/30 via-teal-500/30 to-indigo-500/30 border border-emerald-400/40 backdrop-blur-md flex items-center justify-center shadow-2xl">
-                            <span id="breathAction" class="font-serif text-lg text-slate-200 font-medium">Ready</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <p id="breathTimer" class="text-xs text-slate-400">4-4-4-4 Box Breathing Pace</p>
-                        <button id="breathBtn" onclick="toggleBreathing()" class="px-6 py-2.5 rounded-xl glow-button-emerald text-white text-xs sm:text-sm font-medium transition-all">
-                            Start Breathing Exercise
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 5-4-3-2-1 Sensory Grounding -->
-                <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-2xl mx-auto space-y-4">
-                    <h3 class="font-serif text-lg text-slate-200 flex items-center gap-2">
-                        <i data-lucide="compass" class="w-5 h-5 text-teal-400"></i>
-                        <span>5-4-3-2-1 Sensory Grounding Prompt</span>
-                    </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-white/5 space-y-1">
-                            <span class="font-semibold text-emerald-400">5 SEE:</span>
-                            <p class="text-slate-400">Acknowledge 5 things you can see around you right now.</p>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-white/5 space-y-1">
-                            <span class="font-semibold text-teal-400">4 TOUCH:</span>
-                            <p class="text-slate-400">Notice 4 physical textures (your seat, sweater, desk).</p>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-white/5 space-y-1">
-                            <span class="font-semibold text-indigo-400">3 HEAR:</span>
-                            <p class="text-slate-400">Listen for 3 distinct ambient sounds nearby.</p>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-white/5 space-y-1">
-                            <span class="font-semibold text-purple-400">2 SMELL:</span>
-                            <p class="text-slate-400">Notice 2 scents or take a fresh, clean breath.</p>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-white/5 sm:col-span-2 space-y-1">
-                            <span class="font-semibold text-pink-400">1 TASTE:</span>
-                            <p class="text-slate-400">Focus on 1 taste, or sip a warm drink slowly.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <footer class="py-6 text-center text-xs text-slate-500 border-t border-white/5">
-            <p>Haven Sanctuary • Designed for quiet boundaries & emotional rest</p>
-        </footer>
-    </div>
-
-    <!-- Anonymous Post Modal -->
-    <div id="musingModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-4 relative border border-white/10">
-            <h3 class="font-serif text-xl text-slate-100">Post Anonymous Musing</h3>
-            <textarea id="modalText" rows="4" placeholder="Share a gentle boundary reminder or calm thought..." class="w-full bg-slate-900/80 p-3 rounded-2xl border border-white/10 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 resize-none"></textarea>
-            
-            <div class="flex justify-end gap-3 pt-2">
-                <button onclick="closeMusingModal()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-slate-200">Cancel</button>
-                <button onclick="submitMusing()" class="px-5 py-2 rounded-xl glow-button-emerald text-white text-xs font-medium">Post Anonymously</button>
-            </div>
+            <nav class="flex items-center space-x-6 text-sm text-slate-300">
+                <a href="#journal" class="hover:text-emerald-400 transition-colors">Ether Journal</a>
+                <a href="#musings" class="hover:text-emerald-400 transition-colors">Musings Wall</a>
+                <a href="#ambient" class="hover:text-emerald-400 transition-colors">Ambient Sound</a>
+            </nav>
         </div>
-    </div>
+    </header>
 
-    <!-- JavaScript Logic -->
+    <main class="flex-grow max-w-4xl mx-auto px-6 py-10 w-full space-y-12">
+
+        <!-- Social Battery Tracker -->
+        <section class="glass-card rounded-2xl p-6 relative overflow-hidden">
+            <h2 class="text-sm uppercase tracking-widest text-slate-400 mb-4 font-semibold">Social Battery</h2>
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex-grow bg-slate-800 rounded-full h-4 p-1 flex items-center">
+                    <div id="battery-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 60%;"></div>
+                </div>
+                <span id="battery-text" class="text-emerald-400 font-semibold text-sm w-12 text-right">60%</span>
+            </div>
+            <div class="flex justify-between mt-4">
+                <button onclick="updateBattery(-10)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg border border-slate-700 text-slate-300">- Drain (-10%)</button>
+                <button onclick="updateBattery(10)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg border border-slate-700 text-slate-300">+ Recharge (+10%)</button>
+            </div>
+        </section>
+
+        <!-- Ether Journal Section -->
+        <section id="journal" class="glass-card rounded-2xl p-8 relative overflow-hidden">
+            <div class="mb-6">
+                <h2 class="font-serif text-2xl text-slate-100 font-medium">Ether Journal</h2>
+                <p class="text-sm text-slate-400 mt-1">Write down thoughts you wish to let go. When ready, release them into light particles.</p>
+            </div>
+            <textarea id="journal-input" placeholder="Type your thoughts here..." class="w-full h-36 bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all resize-none"></textarea>
+            <div class="flex justify-end mt-4 relative">
+                <button id="release-btn" onclick="releaseJournal(event)" class="glow-btn bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm flex items-center space-x-2">
+                    <span>Release Thought</span>
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="particle-container" class="absolute inset-0 pointer-events-none"></div>
+        </section>
+
+        <!-- Ambient Sound Generator -->
+        <section id="ambient" class="glass-card rounded-2xl p-8">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="font-serif text-2xl text-slate-100 font-medium">Ambient Sound Synthesizer</h2>
+                    <p class="text-sm text-slate-400 mt-1">Procedural audio calculated live in your browser.</p>
+                </div>
+                <div id="audio-status" class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full">Audio Inactive</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <button onclick="playAmbient('rain')" class="p-4 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition-all">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="cloud-rain" class="w-5 h-5 text-teal-400"></i>
+                        <span class="text-slate-200 font-medium text-sm">Gentle Rain</span>
+                    </div>
+                    <i data-lucide="play" class="w-4 h-4 text-slate-500 group-hover:text-emerald-400"></i>
+                </button>
+
+                <button onclick="playAmbient('ocean')" class="p-4 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition-all">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="waves" class="w-5 h-5 text-blue-400"></i>
+                        <span class="text-slate-200 font-medium text-sm">Ocean Waves</span>
+                    </div>
+                    <i data-lucide="play" class="w-4 h-4 text-slate-500 group-hover:text-emerald-400"></i>
+                </button>
+
+                <button onclick="playAmbient('forest')" class="p-4 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition-all">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="trees" class="w-5 h-5 text-emerald-400"></i>
+                        <span class="text-slate-200 font-medium text-sm">Soft Wind</span>
+                    </div>
+                    <i data-lucide="play" class="w-4 h-4 text-slate-500 group-hover:text-emerald-400"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                <i data-lucide="volume-2" class="w-5 h-5 text-slate-400"></i>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" oninput="adjustVolume(this.value)" class="w-full accent-emerald-500 bg-slate-700 rounded-lg cursor-pointer h-1.5">
+                <button onclick="stopAudio()" class="px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs rounded-lg font-medium transition-colors">Stop</button>
+            </div>
+        </section>
+
+        <!-- Musings Wall -->
+        <section id="musings" class="glass-card rounded-2xl p-8">
+            <h2 class="font-serif text-2xl text-slate-100 font-medium mb-2">Musings Wall</h2>
+            <p class="text-sm text-slate-400 mb-6">Anonymous notes left in the digital space.</p>
+            
+            <div class="flex gap-3 mb-6">
+                <input id="musing-input" type="text" placeholder="Share a gentle reflection..." class="flex-grow bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-emerald-500">
+                <button onclick="postMusing()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium transition-all">Post</button>
+            </div>
+
+            <div id="musing-list" class="space-y-3">
+                <div class="p-4 bg-slate-900/40 rounded-xl border border-slate-800 text-sm text-slate-300">
+                    "You don't have to explain your quietness to anyone."
+                </div>
+                <div class="p-4 bg-slate-900/40 rounded-xl border border-slate-800 text-sm text-slate-300">
+                    "Breathing gently into this evening. It's enough just to be here."
+                </div>
+            </div>
+        </section>
+
+    </main>
+
     <script>
-        // State Storage
-        let privateNotes = JSON.parse(localStorage.getItem('haven_private_notes') || '[]');
-        let wallMusings = JSON.parse(localStorage.getItem('haven_wall_musings') || '[]');
+        lucide.createIcons();
 
-        const defaultMusings = [
-            "Too much empathy without boundaries is self-abandonment.",
-            "Walking away quietly from loud drama is the highest form of peace.",
-            "You don't need to justify why your battery is low today.",
-            "Being soft with yourself is not weakness; it is gentle self-respect."
-        ];
+        // Battery Logic
+        let batteryLevel = 60;
+        function updateBattery(val) {
+            batteryLevel = Math.max(0, Math.min(100, batteryLevel + val));
+            document.getElementById('battery-bar').style.width = batteryLevel + '%';
+            document.getElementById('battery-text').innerText = batteryLevel + '%';
+        }
 
-        // Web Audio Synthesizer (No external audio files needed)
-        let audioCtx = null;
-        let activeNodes = { rain: null, ocean: null, forest: null };
+        // Particle Journal Release
+        function releaseJournal(e) {
+            const textarea = document.getElementById('journal-input');
+            if(!textarea.value.trim()) return;
+            
+            const container = document.getElementById('particle-container');
+            const rect = e.target.getBoundingClientRect();
+            
+            for(let i=0; i<30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle bg-emerald-400';
+                particle.style.width = Math.random() * 8 + 4 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = (Math.random() * 200 - 100) + rect.left + 'px';
+                particle.style.top = rect.top + 'px';
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 3000);
+            }
+            textarea.value = '';
+        }
 
-        function getAudioContext() {
+        // Web Audio API Ambient Synthesizer
+        let audioCtx;
+        let masterGain;
+        let activeNoiseNode = null;
+
+        function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = document.getElementById('volumeSlider').value;
+                masterGain.connect(audioCtx.destination);
             }
-            return audioCtx;
-        }
-
-        function toggleAudio(type) {
-            const ctx = getAudioContext();
-            const btn = document.getElementById(`btn-${type}`);
-
-            if (activeNodes[type]) {
-                // Stop audio
-                activeNodes[type].stop();
-                activeNodes[type] = null;
-                btn.textContent = 'Play';
-                btn.className = 'px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300';
-            } else {
-                // Generate white/pink noise for rain/ocean/forest
-                const bufferSize = ctx.sampleRate * 2;
-                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
-
-                const noise = ctx.createBufferSource();
-                noise.buffer = buffer;
-                noise.loop = true;
-
-                const filter = ctx.createBiquadFilter();
-                if (type === 'rain') filter.type = 'lowpass', filter.frequency.value = 800;
-                if (type === 'ocean') filter.type = 'bandpass', filter.frequency.value = 400;
-                if (type === 'forest') filter.type = 'highpass', filter.frequency.value = 1200;
-
-                const gain = ctx.createGain();
-                gain.gain.value = 0.05;
-
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(ctx.destination);
-
-                noise.start();
-                activeNodes[type] = noise;
-
-                btn.textContent = 'Playing';
-                btn.className = 'px-3 py-1 rounded-lg bg-emerald-600 text-white shadow';
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
             }
+            document.getElementById('audio-status').innerText = 'Audio Active';
+            document.getElementById('audio-status').className = 'text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full';
         }
 
-        // Tab Navigation
-        function switchTab(tabId) {
-            ['ether', 'wall', 'battery', 'breathe'].forEach(id => {
-                document.getElementById(`sec-${id}`).classList.toggle('hidden', id !== tabId);
-                const btn = document.getElementById(`nav-${id}`);
-                if (id === tabId) {
-                    btn.className = 'tab-active px-4 py-2 rounded-xl transition-all flex items-center gap-2';
-                } else {
-                    btn.className = 'px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2';
-                }
-            });
-            lucide.createIcons();
+        function createWhiteNoiseBuffer() {
+            const bufferSize = audioCtx.sampleRate * 2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            return buffer;
         }
 
-        // Word count tracker
-        document.getElementById('journalText').addEventListener('input', (e) => {
-            const words = e.target.value.trim().split(/\s+/).filter(Boolean).length;
-            document.getElementById('wordCount').textContent = `${words} words`;
-        });
+        function playAmbient(type) {
+            initAudio();
+            stopAudio();
 
-        // Save Private Note
-        function savePrivateNote() {
-            const text = document.getElementById('journalText').value.trim();
-            const title = document.getElementById('journalTitle').value.trim() || 'Untitled Reflection';
-            if (!text) return;
+            const whiteNoiseBuffer = createWhiteNoiseBuffer();
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = whiteNoiseBuffer;
+            noiseSource.loop = true;
 
-            const note = {
-                id: Date.now().toString(),
-                title,
-                text,
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            };
+            const filter = audioCtx.createBiquadFilter();
 
-            privateNotes.unshift(note);
-            localStorage.setItem('haven_private_notes', JSON.stringify(privateNotes));
-
-            document.getElementById('journalText').value = '';
-            document.getElementById('journalTitle').value = '';
-            document.getElementById('wordCount').textContent = '0 words';
-
-            renderPrivateNotes();
-        }
-
-        function renderPrivateNotes() {
-            const container = document.getElementById('privateNoteList');
-            document.getElementById('privateCount').textContent = `${privateNotes.length} notes`;
-
-            if (privateNotes.length === 0) {
-                container.innerHTML = `<p class="col-span-2 text-center text-xs text-slate-600 italic py-4">No private reflections saved yet.</p>`;
-                return;
+            if (type === 'rain') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000;
+            } else if (type === 'ocean') {
+                filter.type = 'bandpass';
+                filter.frequency.value = 400;
+                filter.Q.value = 1.0;
+            } else if (type === 'forest') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 600;
             }
 
-            container.innerHTML = privateNotes.map(n => `
-                <div class="glass-panel p-5 rounded-2xl space-y-2 border border-white/5 relative group">
-                    <div class="flex justify-between items-start">
-                        <h4 class="font-serif font-medium text-slate-200 text-sm">${escapeHtml(n.title)}</h4>
-                        <button onclick="deleteNote('${n.id}')" class="text-slate-600 hover:text-rose-400 transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed">${escapeHtml(n.text)}</p>
-                    <span class="text-[10px] text-emerald-400 block pt-1 font-medium">${n.date}</span>
-                </div>
-            `).join('');
-            lucide.createIcons();
+            noiseSource.connect(filter);
+            filter.connect(masterGain);
+            noiseSource.start();
+            activeNoiseNode = noiseSource;
         }
 
-        function deleteNote(id) {
-            privateNotes = privateNotes.filter(n => n.id !== id);
-            localStorage.setItem('haven_private_notes', JSON.stringify(privateNotes));
-            renderPrivateNotes();
-        }
-
-        // Particle Release Effect into Ether
-        function releaseToEther() {
-            const text = document.getElementById('journalText').value.trim();
-            if (!text) return;
-
-            const canvas = document.getElementById('particleCanvas');
-            const ctx = canvas.getContext('2d');
-            const container = document.getElementById('journalCard');
-
-            canvas.width = container.offsetWidth;
-            canvas.height = container.offsetHeight;
-
-            // Fade out inputs
-            document.getElementById('journalText').style.transition = 'opacity 1s ease';
-            document.getElementById('journalTitle').style.transition = 'opacity 1s ease';
-            document.getElementById('journalText').style.opacity = '0';
-            document.getElementById('journalTitle').style.opacity = '0';
-
-            const particles = [];
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 3.5 + 1,
-                    color: i % 2 === 0 ? '#10b981' : '#a78bfa',
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: -Math.random() * 2.5 - 0.5,
-                    alpha: 1
-                });
-            }
-
-            let frame = 0;
-            function render() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                let alive = false;
-
-                particles.forEach(p => {
-                    if (p.alpha > 0) {
-                        alive = true;
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.alpha -= 0.009;
-
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = p.color;
-                        ctx.globalAlpha = Math.max(0, p.alpha);
-                        ctx.shadowBlur = 10;
-                        ctx.shadowColor = p.color;
-                        ctx.fill();
-                    }
-                });
-
-                frame++;
-                if (alive && frame < 180) {
-                    requestAnimationFrame(render);
-                } else {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    document.getElementById('journalText').value = '';
-                    document.getElementById('journalTitle').value = '';
-                    document.getElementById('wordCount').textContent = '0 words';
-                    document.getElementById('journalText').style.opacity = '1';
-                    document.getElementById('journalTitle').style.opacity = '1';
-                }
-            }
-            render();
-        }
-
-        // Musings Safe Wall
-        function openMusingModal() { document.getElementById('musingModal').classList.remove('hidden'); }
-        function closeMusingModal() { document.getElementById('musingModal').classList.add('hidden'); }
-
-        function submitMusing() {
-            const text = document.getElementById('modalText').value.trim();
-            if (!text) return;
-
-            wallMusings.unshift(text);
-            localStorage.setItem('haven_wall_musings', JSON.stringify(wallMusings));
-            document.getElementById('modalText').value = '';
-            closeMusingModal();
-            renderWall();
-        }
-
-        function renderWall() {
-            const grid = document.getElementById('wallGrid');
-            const all = [...wallMusings, ...defaultMusings];
-
-            grid.innerHTML = all.map(m => `
-                <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-3 relative flex flex-col justify-between">
-                    <i data-lucide="quote" class="w-5 h-5 text-emerald-400/50"></i>
-                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">${escapeHtml(m)}</p>
-                    <span class="text-[10px] text-slate-500 italic block pt-2">Anonymous • Safe Haven</span>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        // Social Battery Tracker
-        function updateBattery(val) {
-            document.getElementById('batteryPercent').textContent = `${val}%`;
-            const status = document.getElementById('batteryStatus');
-            const box = document.getElementById('batteryGuidance');
-
-            if (val <= 30) {
-                status.textContent = 'Solitude Needed';
-                box.innerHTML = `
-                    <p class="text-xs font-semibold text-rose-400">Rest & Recharge Notice:</p>
-                    <p class="text-xs text-slate-400 leading-relaxed">Your battery is low. Turn on Do Not Disturb, step away from social expectations, and spend quiet time restoring your inner space.</p>
-                `;
-            } else if (val <= 70) {
-                status.textContent = 'Selective Interaction';
-                box.innerHTML = `
-                    <p class="text-xs font-semibold text-teal-400">Gentle Boundary Pace:</p>
-                    <p class="text-xs text-slate-400 leading-relaxed">You have moderate energy. Choose low-stakes environments and prioritize connections with people who honor your peace.</p>
-                `;
-            } else {
-                status.textContent = 'Energized & Open';
-                box.innerHTML = `
-                    <p class="text-xs font-semibold text-emerald-400">Abundance Energy:</p>
-                    <p class="text-xs text-slate-400 leading-relaxed">You feel recharged! Enjoy social moments while keeping your healthy boundaries intact.</p>
-                `;
+        function adjustVolume(val) {
+            if (masterGain) {
+                masterGain.gain.value = val;
             }
         }
 
-        // Breathing Circle Animation Logic
-        let breathInterval = null;
-        let isBreathingActive = false;
-
-        function toggleBreathing() {
-            const circle = document.getElementById('breathCircle');
-            const action = document.getElementById('breathAction');
-            const btn = document.getElementById('breathBtn');
-
-            if (isBreathingActive) {
-                clearInterval(breathInterval);
-                isBreathingActive = false;
-                circle.style.transform = 'scale(1)';
-                action.textContent = 'Ready';
-                btn.textContent = 'Start Breathing Exercise';
-                return;
+        function stopAudio() {
+            if (activeNoiseNode) {
+                activeNoiseNode.stop();
+                activeNoiseNode.disconnect();
+                activeNoiseNode = null;
             }
-
-            isBreathingActive = true;
-            btn.textContent = 'Stop Breathing';
-
-            let phase = 0; // 0: Inhale, 1: Hold, 2: Exhale, 3: Hold
-            const step = () => {
-                if (phase === 0) {
-                    action.textContent = 'Inhale';
-                    circle.style.transform = 'scale(1.7)';
-                } else if (phase === 1) {
-                    action.textContent = 'Hold';
-                } else if (phase === 2) {
-                    action.textContent = 'Exhale';
-                    circle.style.transform = 'scale(1)';
-                } else if (phase === 3) {
-                    action.textContent = 'Pause';
-                }
-                phase = (phase + 1) % 4;
-            };
-
-            step();
-            breathInterval = setInterval(step, 4000);
         }
 
-        function escapeHtml(str) {
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // Musings Wall
+        function postMusing() {
+            const input = document.getElementById('musing-input');
+            if(!input.value.trim()) return;
+            const list = document.getElementById('musing-list');
+            const card = document.createElement('div');
+            card.className = 'p-4 bg-slate-900/40 rounded-xl border border-slate-800 text-sm text-slate-300 transition-all';
+            card.innerText = `"${input.value}"`;
+            list.prepend(card);
+            input.value = '';
         }
-
-        window.onload = function() {
-            lucide.createIcons();
-            renderPrivateNotes();
-            renderWall();
-            updateBattery(50);
-        };
     </script>
 </body>
 </html>
