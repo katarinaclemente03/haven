@@ -14,12 +14,14 @@
             theme: {
                 extend: {
                     colors: {
-                        midnight: '#0b0f19',
-                        slateBg: '#111827',
-                        emeraldAccent: '#10b981',
-                        tealSoft: '#14b8a6',
-                        lavenderGlow: '#a78bfa',
-                        cardDark: 'rgba(17, 24, 39, 0.75)'
+                        sage: {
+                            50: '#f4f7f4',
+                            100: '#e3ebe3',
+                            500: '#587a61',
+                            600: '#486851',
+                            700: '#3a5240',
+                        },
+                        sand: '#f9f8f6'
                     },
                     fontFamily: {
                         serif: ['Playfair Display', 'serif'],
@@ -31,21 +33,15 @@
     </script>
     <style>
         body {
-            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 60%, #0b0f19 100%);
-            color: #f3f4f6;
+            background-color: #f7f6f4;
+            color: #2d3748;
             min-height: 100vh;
         }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-        .glow-btn {
-            transition: all 0.3s ease;
-        }
-        .glow-btn:hover {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        .light-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(229, 231, 235, 0.8);
         }
         .particle {
             position: absolute;
@@ -54,121 +50,95 @@
             border-radius: 50%;
         }
         @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-120px) scale(0.2); }
+            0% { opacity: 0.8; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0.2); }
         }
     </style>
 </head>
 <body class="font-sans antialiased flex flex-col min-h-screen">
 
-    <!-- Navigation Header -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <!-- Header / Navigation -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Logo -->
             <div class="flex items-center space-x-3">
-                <i data-lucide="shield" class="w-6 h-6 text-emerald-400"></i>
-                <span class="font-serif text-xl font-medium tracking-wide text-slate-100">Haven</span>
+                <div class="w-9 h-9 rounded-full bg-sage-100 flex items-center justify-center text-sage-600">
+                    <i data-lucide="leaf" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif text-xl font-semibold text-gray-900 leading-tight">Haven</h1>
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Your Digital Sanctuary</p>
+                </div>
             </div>
-            <nav class="flex items-center space-x-6 text-sm text-slate-300">
-                <a href="#journal" class="hover:text-emerald-400 transition-colors">Ether Journal</a>
-                <a href="#musings" class="hover:text-emerald-400 transition-colors">Musings Wall</a>
-                <a href="#ambient" class="hover:text-emerald-400 transition-colors">Ambient Sound</a>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center bg-gray-100/80 p-1.5 rounded-full text-xs font-medium text-gray-600 space-x-1">
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-full bg-white text-gray-900 shadow-sm">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sage-600"></i>
+                    <span>The Ether</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-full hover:text-gray-900 transition-colors">
+                    <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+                    <span>Safe Wall</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-full hover:text-gray-900 transition-colors">
+                    <i data-lucide="battery-charging" class="w-3.5 h-3.5"></i>
+                    <span>Social Battery</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-full hover:text-gray-900 transition-colors">
+                    <i data-lucide="wind" class="w-3.5 h-3.5"></i>
+                    <span>Breathe</span>
+                </button>
             </nav>
+
+            <!-- Gentle Rain Control -->
+            <div class="flex items-center space-x-3 bg-sage-50 px-3.5 py-1.5 rounded-full border border-sage-100">
+                <button id="rainToggleBtn" onclick="toggleRain()" class="flex items-center space-x-2 text-xs font-medium text-sage-700 hover:text-sage-600">
+                    <i data-lucide="cloud-rain" class="w-4 h-4 text-sage-500"></i>
+                    <span id="rainBtnText">Gentle Rain</span>
+                </button>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" oninput="adjustVolume(this.value)" class="w-16 accent-sage-600 bg-gray-200 rounded-lg h-1 cursor-pointer">
+            </div>
+
         </div>
     </header>
 
-    <main class="flex-grow max-w-4xl mx-auto px-6 py-10 w-full space-y-12">
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-3xl mx-auto px-6 py-12 w-full space-y-8">
 
-        <!-- Social Battery Tracker -->
-        <section class="glass-card rounded-2xl p-6 relative overflow-hidden">
-            <h2 class="text-sm uppercase tracking-widest text-slate-400 mb-4 font-semibold">Social Battery</h2>
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex-grow bg-slate-800 rounded-full h-4 p-1 flex items-center">
-                    <div id="battery-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 60%;"></div>
-                </div>
-                <span id="battery-text" class="text-emerald-400 font-semibold text-sm w-12 text-right">60%</span>
-            </div>
-            <div class="flex justify-between mt-4">
-                <button onclick="updateBattery(-10)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg border border-slate-700 text-slate-300">- Drain (-10%)</button>
-                <button onclick="updateBattery(10)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg border border-slate-700 text-slate-300">+ Recharge (+10%)</button>
-            </div>
-        </section>
+        <!-- Title Section -->
+        <div class="text-center space-y-3">
+            <h2 class="font-serif text-4xl text-gray-800 font-normal">The Ether</h2>
+            <p class="text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
+                A peaceful, unjudged space. Express what weighs on your heart. Save it quietly to your private journal, or dissolve it into light particles and let it go forever.
+            </p>
+        </div>
 
-        <!-- Ether Journal Section -->
-        <section id="journal" class="glass-card rounded-2xl p-8 relative overflow-hidden">
-            <div class="mb-6">
-                <h2 class="font-serif text-2xl text-slate-100 font-medium">Ether Journal</h2>
-                <p class="text-sm text-slate-400 mt-1">Write down thoughts you wish to let go. When ready, release them into light particles.</p>
-            </div>
-            <textarea id="journal-input" placeholder="Type your thoughts here..." class="w-full h-36 bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all resize-none"></textarea>
-            <div class="flex justify-end mt-4 relative">
-                <button id="release-btn" onclick="releaseJournal(event)" class="glow-btn bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm flex items-center space-x-2">
-                    <span>Release Thought</span>
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div id="particle-container" class="absolute inset-0 pointer-events-none"></div>
-        </section>
-
-        <!-- Ambient Sound Generator -->
-        <section id="ambient" class="glass-card rounded-2xl p-8">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="font-serif text-2xl text-slate-100 font-medium">Ambient Sound Synthesizer</h2>
-                    <p class="text-sm text-slate-400 mt-1">Procedural audio calculated live in your browser.</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <button onclick="playAmbient('rain')" class="p-4 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition-all">
-                    <div class="flex items-center space-x-3">
-                        <i data-lucide="cloud-rain" class="w-5 h-5 text-teal-400"></i>
-                        <span class="text-slate-200 font-medium text-sm">Gentle Rain</span>
-                    </div>
-                    <i data-lucide="play" class="w-4 h-4 text-slate-500 group-hover:text-emerald-400"></i>
-                </button>
-
-                <button onclick="playAmbient('ocean')" class="p-4 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition-all">
-                    <div class="flex items-center space-x-3">
-                        <i data-lucide="waves" class="w-5 h-5 text-blue-400"></i>
-                        <span class="text-slate-200 font-medium text-sm">Ocean Waves</span>
-                    </div>
-                    <i data-lucide="play" class="w-4 h-4 text-slate-500 group-hover:text-emerald-400"></i>
-                </button>
-
-                <button onclick="playAmbient('forest')" class="p-4 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition-all">
-                    <div class="flex items-center space-x-3">
-                        <i data-lucide="trees" class="w-5 h-5 text-emerald-400"></i>
-                        <span class="text-slate-200 font-medium text-sm">Soft Wind</span>
-                    </div>
-                    <i data-lucide="play" class="w-4 h-4 text-slate-500 group-hover:text-emerald-400"></i>
-                </button>
-            </div>
-
-            <div class="flex items-center space-x-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                <i data-lucide="volume-2" class="w-5 h-5 text-slate-400"></i>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" oninput="adjustVolume(this.value)" class="w-full accent-emerald-500 bg-slate-700 rounded-lg cursor-pointer h-1.5">
-                <button onclick="stopAudio()" class="px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs rounded-lg font-medium transition-colors">Stop</button>
-            </div>
-        </section>
-
-        <!-- Musings Wall -->
-        <section id="musings" class="glass-card rounded-2xl p-8">
-            <h2 class="font-serif text-2xl text-slate-100 font-medium mb-2">Musings Wall</h2>
-            <p class="text-sm text-slate-400 mb-6">Anonymous notes left in the digital space.</p>
+        <!-- Ether Writing Card -->
+        <section class="light-card p-8 relative overflow-hidden space-y-6">
             
-            <div class="flex gap-3 mb-6">
-                <input id="musing-input" type="text" placeholder="Share a gentle reflection..." class="flex-grow bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-emerald-500">
-                <button onclick="postMusing()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium transition-all">Post</button>
+            <input id="entry-title" type="text" placeholder="Give your entry a title (optional)..." class="w-full text-lg font-serif placeholder-sage-500/60 text-gray-800 bg-transparent border-b border-gray-100 pb-3 focus:outline-none focus:border-sage-500 transition-colors">
+
+            <textarea id="entry-body" oninput="updateWordCount()" placeholder="Begin writing here... No rules, no judgments." class="w-full h-56 bg-transparent text-gray-700 placeholder-sage-500/60 focus:outline-none resize-none leading-relaxed text-sm"></textarea>
+
+            <div class="flex items-center justify-between pt-4 border-t border-gray-50">
+                <span id="word-count" class="text-xs text-gray-400 italic">0 words</span>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="saveToJournal()" class="px-5 py-2.5 rounded-full border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                        <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                        <span>Save to Journal</span>
+                    </button>
+
+                    <button onclick="releaseToEther(event)" class="px-5 py-2.5 rounded-full bg-sage-600 hover:bg-sage-700 text-white text-xs font-medium transition-all shadow-sm flex items-center space-x-2">
+                        <i data-lucide="wind" class="w-3.5 h-3.5"></i>
+                        <span>Release to Ether</span>
+                    </button>
+                </div>
             </div>
 
-            <div id="musing-list" class="space-y-3">
-                <div class="p-4 bg-slate-900/40 rounded-xl border border-slate-800 text-sm text-slate-300">
-                    "You don't have to explain your quietness to anyone."
-                </div>
-                <div class="p-4 bg-slate-900/40 rounded-xl border border-slate-800 text-sm text-slate-300">
-                    "Breathing gently into this evening. It's enough just to be here."
-                </div>
-            </div>
+            <div id="particle-container" class="absolute inset-0 pointer-events-none"></div>
         </section>
 
     </main>
@@ -176,39 +146,54 @@
     <script>
         lucide.createIcons();
 
-        // Battery Logic
-        let batteryLevel = 60;
-        function updateBattery(val) {
-            batteryLevel = Math.max(0, Math.min(100, batteryLevel + val));
-            document.getElementById('battery-bar').style.width = batteryLevel + '%';
-            document.getElementById('battery-text').innerText = batteryLevel + '%';
+        // Word Count Tracker
+        function updateWordCount() {
+            const text = document.getElementById('entry-body').value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            document.getElementById('word-count').innerText = `${words} words`;
         }
 
-        // Particle Journal Release
-        function releaseJournal(e) {
-            const textarea = document.getElementById('journal-input');
-            if(!textarea.value.trim()) return;
-            
+        // Particle Release Effect
+        function releaseToEther(e) {
+            const body = document.getElementById('entry-body');
+            const title = document.getElementById('entry-title');
+            if(!body.value.trim() && !title.value.trim()) return;
+
             const container = document.getElementById('particle-container');
             const rect = e.target.getBoundingClientRect();
-            
-            for(let i=0; i<30; i++) {
+
+            for(let i = 0; i < 25; i++) {
                 const particle = document.createElement('div');
-                particle.className = 'particle bg-emerald-400';
-                particle.style.width = Math.random() * 8 + 4 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.left = (Math.random() * 200 - 100) + rect.left + 'px';
-                particle.style.top = rect.top + 'px';
+                particle.className = 'particle bg-sage-500';
+                const size = Math.random() * 6 + 4;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = (Math.random() * 240 - 120) + (rect.left - container.getBoundingClientRect().left) + 'px';
+                particle.style.top = (rect.top - container.getBoundingClientRect().top) + 'px';
                 container.appendChild(particle);
+
                 setTimeout(() => particle.remove(), 3000);
             }
-            textarea.value = '';
+
+            title.value = '';
+            body.value = '';
+            updateWordCount();
         }
 
-        // Audio Synthesizer Original Engine
+        function saveToJournal() {
+            const body = document.getElementById('entry-body');
+            if(!body.value.trim()) return;
+            alert('Saved quietly to your private journal.');
+            document.getElementById('entry-title').value = '';
+            body.value = '';
+            updateWordCount();
+        }
+
+        // Gentle Rain Sound Generator Engine
         let audioCtx;
         let masterGain;
-        let activeNoiseNode = null;
+        let noiseSource = null;
+        let isPlaying = false;
 
         function initAudio() {
             if (!audioCtx) {
@@ -222,69 +207,53 @@
             }
         }
 
-        function createNoiseBuffer() {
+        function toggleRain() {
+            initAudio();
+            if (isPlaying) {
+                stopRain();
+            } else {
+                startRain();
+            }
+        }
+
+        function startRain() {
             const bufferSize = audioCtx.sampleRate * 2;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const output = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
                 output[i] = Math.random() * 2 - 1;
             }
-            return buffer;
-        }
 
-        function playAmbient(type) {
-            initAudio();
-            stopAudio();
-
-            const noiseBuffer = createNoiseBuffer();
-            const noiseSource = audioCtx.createBufferSource();
-            noiseSource.buffer = noiseBuffer;
+            noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = buffer;
             noiseSource.loop = true;
 
             const filter = audioCtx.createBiquadFilter();
-
-            if (type === 'rain') {
-                filter.type = 'lowpass';
-                filter.frequency.value = 1800;
-            } else if (type === 'ocean') {
-                filter.type = 'bandpass';
-                filter.frequency.value = 800;
-                filter.Q.value = 0.8;
-            } else if (type === 'forest') {
-                filter.type = 'lowpass';
-                filter.frequency.value = 1200;
-            }
+            filter.type = 'lowpass';
+            filter.frequency.value = 1600;
 
             noiseSource.connect(filter);
             filter.connect(masterGain);
             noiseSource.start();
-            activeNoiseNode = noiseSource;
+
+            isPlaying = true;
+            document.getElementById('rainBtnText').innerText = 'Pause Rain';
+        }
+
+        function stopRain() {
+            if (noiseSource) {
+                noiseSource.stop();
+                noiseSource.disconnect();
+                noiseSource = null;
+            }
+            isPlaying = false;
+            document.getElementById('rainBtnText').innerText = 'Gentle Rain';
         }
 
         function adjustVolume(val) {
             if (masterGain) {
                 masterGain.gain.value = val;
             }
-        }
-
-        function stopAudio() {
-            if (activeNoiseNode) {
-                activeNoiseNode.stop();
-                activeNoiseNode.disconnect();
-                activeNoiseNode = null;
-            }
-        }
-
-        // Musings Wall
-        function postMusing() {
-            const input = document.getElementById('musing-input');
-            if(!input.value.trim()) return;
-            const list = document.getElementById('musing-list');
-            const card = document.createElement('div');
-            card.className = 'p-4 bg-slate-900/40 rounded-xl border border-slate-800 text-sm text-slate-300 transition-all';
-            card.innerText = `"${input.value}"`;
-            list.prepend(card);
-            input.value = '';
         }
     </script>
 </body>
