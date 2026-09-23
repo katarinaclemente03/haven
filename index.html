@@ -117,10 +117,10 @@
       const rainAudioRef = useRef(null);
 
       useEffect(() => {
-        // Using a reliable archive/CDN link optimized for HTML5 audio playback across iOS devices
-        const rain = new Audio("https://upload.wikimedia.org/wikipedia/commons/b/b5/Rain_on_tent.ogg");
+        // Original Pixabay rain MP3 stream
+        const rain = new Audio("https://cdn.pixabay.com/download/audio/2022/05/16/audio_db324b176d.mp3?filename=raindrops-on-glass-112349.mp3");
         rain.loop = true;
-        rain.volume = 0.7;
+        rain.volume = 0.6;
         rainAudioRef.current = rain;
 
         return () => {
@@ -191,14 +191,11 @@
           setIsPlayingRain(false);
         } else {
           rain.currentTime = 0;
-          const playPromise = rain.play();
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              setIsPlayingRain(true);
-            }).catch((err) => {
-              console.error("Audio playback error:", err);
-            });
-          }
+          rain.play().then(() => {
+            setIsPlayingRain(true);
+          }).catch(err => {
+            console.log("Playback error:", err);
+          });
         }
       };
 
