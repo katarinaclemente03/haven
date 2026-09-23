@@ -102,7 +102,7 @@
 
     function App() {
       const [activeTab, setActiveTab] = useState('ether');
-      const [soundMode, setSoundMode] = useState('off');
+      const [isPlayingRain, setIsPlayingRain] = useState(false);
       
       const [etherText, setEtherText] = useState(() => localStorage.getItem('haven_ether') || '');
       const [journalEntries, setJournalEntries] = useState(() => JSON.parse(localStorage.getItem('haven_journal_list')) || []);
@@ -118,23 +118,16 @@
       const [breathTimer, setBreathTimer] = useState(4);
 
       const rainAudioRef = useRef(null);
-      const windAudioRef = useRef(null);
 
       useEffect(() => {
-        // High-clarity MP3 rain and wind streams optimized for iOS
+        // High-clarity MP3 rain stream optimized for iOS
         const rain = new Audio("https://cdn.pixabay.com/download/audio/2022/05/16/audio_db324b176d.mp3?filename=raindrops-on-glass-112349.mp3");
         rain.loop = true;
         rain.volume = 0.6;
         rainAudioRef.current = rain;
 
-        const wind = new Audio("https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=soft-wind-ambient-18349.mp3");
-        wind.loop = true;
-        wind.volume = 0.5;
-        windAudioRef.current = wind;
-
         return () => {
           rain.pause();
-          wind.pause();
         };
       }, []);
 
@@ -193,29 +186,19 @@
         return () => postsRef.off();
       }, []);
 
-      const toggleSound = (mode) => {
+      const toggleRainSound = () => {
         const rain = rainAudioRef.current;
-        const wind = windAudioRef.current;
+        if (!rain) return;
 
-        if (soundMode === mode) {
-          if (rain) rain.pause();
-          if (wind) wind.pause();
-          setSoundMode('off');
-          return;
-        }
-
-        if (rain) rain.pause();
-        if (wind) wind.pause();
-
-        const targetAudio = mode === 'rain' ? rain : wind;
-        if (targetAudio) {
-          targetAudio.currentTime = 0;
-          
-          // iOS audio unlock: Explicit play call triggered directly by user click
-          const playPromise = targetAudio.play();
+        if (isPlayingRain) {
+          rain.pause();
+          setIsPlayingRain(false);
+        } else {
+          rain.currentTime = 0;
+          const playPromise = rain.play();
           if (playPromise !== undefined) {
             playPromise.then(() => {
-              setSoundMode(mode);
+              setIsPlayingRain(true);
             }).catch((err) => {
               console.error("Audio playback error:", err);
             });
@@ -267,28 +250,17 @@
               </div>
             </div>
 
-            {/* Sound Controls */}
-            <div className="flex items-center space-x-2">
+            {/* Sound Control */}
+            <div>
               <button
-                onClick={() => toggleSound('rain')}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
-                  soundMode === 'rain'
+                onClick={toggleRainSound}
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
+                  isPlayingRain
                     ? 'bg-emerald-700 text-white shadow-sm'
                     : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'
                 }`}
               >
-                🌧️ {soundMode === 'rain' ? 'Raindrops (Playing)' : 'Raindrops'}
-              </button>
-
-              <button
-                onClick={() => toggleSound('wind')}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
-                  soundMode === 'wind'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                🌬️ {soundMode === 'wind' ? 'Gentle Wind (Playing)' : 'Wind'}
+                🌧️ {isPlayingRain ? 'Raindrops (Playing)' : 'Raindrops'}
               </button>
             </div>
           </header>
