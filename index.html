@@ -101,18 +101,23 @@
       const [newPost, setNewPost] = useState('');
       const [battery, setBattery] = useState(() => parseInt(localStorage.getItem('haven_battery')) || 50);
 
-      // Pre-instantiated audio references for mobile support
+      // Breathing State
+      const [isBreathing, setIsBreathing] = useState(false);
+      const [breathPhase, setBreathPhase] = useState('Inhale'); // Inhale, Hold, Exhale, Hold
+      const [breathTimer, setBreathTimer] = useState(4);
+
+      // Pre-instantiated audio references
       const rainAudioRef = useRef(null);
       const windAudioRef = useRef(null);
 
       useEffect(() => {
-        // Initialize mobile-friendly audio elements on mount
-        const rain = new Audio("https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg");
+        // MP3 links for reliable mobile playback
+        const rain = new Audio("https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=gentle-rain-16274.mp3");
         rain.loop = true;
         rain.volume = 0.5;
         rainAudioRef.current = rain;
 
-        const wind = new Audio("https://actions.google.com/sounds/v1/weather/wind_synthetic.ogg");
+        const wind = new Audio("https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=soft-wind-ambient-18349.mp3");
         wind.loop = true;
         wind.volume = 0.5;
         windAudioRef.current = wind;
@@ -122,6 +127,32 @@
           wind.pause();
         };
       }, []);
+
+      // Box Breathing Timer Loop
+      useEffect(() => {
+        let interval = null;
+        if (isBreathing) {
+          interval = setInterval(() => {
+            setBreathTimer((prevTimer) => {
+              if (prevTimer > 1) return prevTimer - 1;
+
+              // Transition between phases (4 seconds each)
+              setBreathPhase((prevPhase) => {
+                if (prevPhase === 'Inhale') return 'Hold';
+                if (prevPhase === 'Hold') return 'Exhale';
+                if (prevPhase === 'Exhale') return 'Hold ';
+                return 'Inhale';
+              });
+              return 4;
+            });
+          }, 1000);
+        } else {
+          setBreathPhase('Inhale');
+          setBreathTimer(4);
+          clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+      }, [isBreathing]);
 
       useEffect(() => {
         localStorage.setItem('haven_ether', etherText);
@@ -153,12 +184,10 @@
         return () => postsRef.off();
       }, []);
 
-      // Mobile-optimized audio trigger directly attached to user tap
       const toggleSound = (mode) => {
         const rain = rainAudioRef.current;
         const wind = windAudioRef.current;
 
-        // Turn off if tapping the same sound
         if (soundMode === mode) {
           if (rain) rain.pause();
           if (wind) wind.pause();
@@ -166,17 +195,20 @@
           return;
         }
 
-        // Pause existing audio first
         if (rain) rain.pause();
         if (wind) wind.pause();
 
         const targetAudio = mode === 'rain' ? rain : wind;
         if (targetAudio) {
-          targetAudio.play().then(() => {
-            setSoundMode(mode);
-          }).catch((err) => {
-            console.error("Mobile audio play failed:", err);
-          });
+          targetAudio.currentTime = 0;
+          const playPromise = targetAudio.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              setSoundMode(mode);
+            }).catch((err) => {
+              console.error("Mobile audio playback error:", err);
+            });
+          }
         }
       };
 
@@ -422,19 +454,48 @@
               </div>
             )}
 
-            {/* Breathe */}
+            {/* Breathe (Guided 4-4-4-4 Box Breathing) */}
             {activeTab === 'breathe' && (
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-stone-200/70 flex flex-col items-center text-center space-y-6">
                 <div>
                   <h2 className="text-lg font-medium text-stone-800">Box Breathing</h2>
-                  <p className="text-xs text-stone-400">Inhale, hold, exhale, hold.</p>
+                  <p className="text-xs text-stone-400">Guided 4-second pace to slow your mind.</p>
                 </div>
 
-                <div className="w-40 h-40 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center relative animate-pulse">
-                  <div className="w-28 h-28 rounded-full bg-emerald-100/60 flex items-center justify-center">
-                    <span className="text-xs font-medium text-emerald-900">Relax</span>
+                {/* Animated Breathing Circle */}
+                <div className="relative flex items-center justify-center w-52 h-52">
+                  <div 
+                    className="absolute rounded-full bg-emerald-100/60 border border-emerald-300 transition-all duration-1000 ease-in-out"
+                    style={{
+                      width: isBreathing 
+                        ? (breathPhase === 'Inhale' ? '13rem' : breathPhase === 'Exhale' ? '7rem' : breathPhase.startsWith('Hold') ? '11rem' : '9rem') 
+                        : '8rem',
+                      height: isBreathing 
+                        ? (breathPhase === 'Inhale' ? '13rem' : breathPhase === 'Exhale' ? '7rem' : breathPhase.startsWith('Hold') ? '11rem' : '9rem') 
+                        : '8rem',
+                    }}
+                  />
+                  <div className="relative z-10 flex flex-col items-center justify-center">
+                    <span className="text-lg font-medium text-emerald-900">
+                      {isBreathing ? breathPhase : 'Ready'}
+                    </span>
+                    {isBreathing && (
+                      <span className="text-2xl font-light text-emerald-700 mt-1">{breathTimer}</span>
+                    )}
                   </div>
                 </div>
+
+                {/* Control Button */}
+                <button
+                  onClick={() => setIsBreathing(!isBreathing)}
+                  className={`px-8 py-3 rounded-full text-xs font-medium transition-all shadow-sm active:scale-95 ${
+                    isBreathing
+                      ? 'bg-stone-200 text-stone-700 hover:bg-stone-300'
+                      : 'bg-emerald-700 text-white hover:bg-emerald-800'
+                  }`}
+                >
+                  {isBreathing ? 'Pause Session' : 'Start Breathing'}
+                </button>
               </div>
             )}
 
