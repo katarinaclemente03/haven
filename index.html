@@ -121,10 +121,10 @@
       const windAudioRef = useRef(null);
 
       useEffect(() => {
-        // High-compatibility audio streams for iOS and desktop
-        const rain = new Audio("https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg");
+        // High-compatibility MP3 audio streams for iOS and desktop
+        const rain = new Audio("https://cdn.pixabay.com/download/audio/2021/08/09/audio_0246a4773c.mp3?filename=light-rain-ambient-114354.mp3");
         rain.loop = true;
-        rain.volume = 0.5;
+        rain.volume = 0.6;
         rainAudioRef.current = rain;
 
         const wind = new Audio("https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=soft-wind-ambient-18349.mp3");
@@ -277,7 +277,7 @@
                     : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'
                 }`}
               >
-                🌧️ {soundMode === 'rain' ? 'Slow Rain' : 'Rain'}
+                🌧️ {soundMode === 'rain' ? 'Rain (Playing)' : 'Rain'}
               </button>
 
               <button
@@ -288,7 +288,7 @@
                     : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'
                 }`}
               >
-                🌬️ {soundMode === 'wind' ? 'Gentle Wind' : 'Wind'}
+                🌬️ {soundMode === 'wind' ? 'Wind (Playing)' : 'Wind'}
               </button>
             </div>
           </header>
