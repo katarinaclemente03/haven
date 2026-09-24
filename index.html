@@ -26,7 +26,6 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #f2f6f8;
       color: #2d3748;
-      /* Light blue-gray botanical leaf background matching your image */
       background-image: radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.85) 0%, rgba(242, 246, 248, 0.4) 100%),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 200 200'%3E%3Cg fill='%23b4c6d4' fill-opacity='0.3'%3E%3Cpath d='M30 10 C50 30, 60 70, 30 110 C20 90, 10 50, 30 10 Z'/%3E%3Cpath d='M35 30 C55 25, 75 35, 80 50 C65 55, 45 45, 35 30 Z'/%3E%3Cpath d='M25 50 C5 45, -15 55, -20 70 C-5 75, 15 65, 25 50 Z'/%3E%3Cpath d='M32 70 C52 65, 72 75, 77 90 C62 95, 42 85, 32 70 Z'/%3E%3Cpath d='M150 90 C170 110, 180 150, 150 190 C140 170, 130 130, 150 90 Z'/%3E%3Cpath d='M155 110 C175 105, 195 115, 200 130 C185 135, 165 125, 155 110 Z'/%3E%3Cpath d='M145 130 C125 125, 105 135, 100 150 C115 155, 135 145, 145 130 Z'/%3E%3C/g%3E%3C/svg%3E");
       background-repeat: repeat;
@@ -60,7 +59,6 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDFOX_ChE_wPHNGyrLXGC2MiGCmAbe6rc",
       authDomain: "haven-25b0b.firebaseapp.com",
@@ -102,7 +100,7 @@
 
     function App() {
       const [activeTab, setActiveTab] = useState('ether');
-      const [soundMode, setSoundMode] = useState('off');
+      const [isPlayingRain, setIsPlayingRain] = useState(false);
       
       const [etherText, setEtherText] = useState(() => localStorage.getItem('haven_ether') || '');
       const [journalEntries, setJournalEntries] = useState(() => JSON.parse(localStorage.getItem('haven_journal_list')) || []);
@@ -112,33 +110,29 @@
       const [newPost, setNewPost] = useState('');
       const [battery, setBattery] = useState(() => parseInt(localStorage.getItem('haven_battery')) || 50);
 
-      // Box Breathing State
       const [isBreathing, setIsBreathing] = useState(false);
       const [breathPhase, setBreathPhase] = useState('Inhale'); 
       const [breathTimer, setBreathTimer] = useState(4);
 
+      // Community feature state
+      const [communityPosts, setCommunityPosts] = useState([]);
+      const [newCommunityPost, setNewCommunityPost] = useState('');
+      const [replyingToId, setReplyingToId] = useState(null);
+      const [replyText, setReplyText] = useState('');
+
       const rainAudioRef = useRef(null);
-      const windAudioRef = useRef(null);
 
       useEffect(() => {
-        // High-compatibility audio streams for iOS and desktop
-        const rain = new Audio("https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg");
+        const rain = new Audio("https://ia800902.us.archive.org/27/items/RainSounds_201701/Rain.mp3");
         rain.loop = true;
-        rain.volume = 0.5;
+        rain.volume = 0.6;
         rainAudioRef.current = rain;
-
-        const wind = new Audio("https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=soft-wind-ambient-18349.mp3");
-        wind.loop = true;
-        wind.volume = 0.5;
-        windAudioRef.current = wind;
 
         return () => {
           rain.pause();
-          wind.pause();
         };
       }, []);
 
-      // Box Breathing Timer Loop
       useEffect(() => {
         let interval = null;
         if (isBreathing) {
@@ -175,6 +169,7 @@
         localStorage.setItem('haven_battery', battery.toString());
       }, [battery]);
 
+      // Firebase listener for Safe Wall
       useEffect(() => {
         const postsRef = db.ref('posts');
         postsRef.on('value', (snapshot) => {
@@ -193,33 +188,43 @@
         return () => postsRef.off();
       }, []);
 
-      const toggleSound = (mode) => {
-        const rain = rainAudioRef.current;
-        const wind = windAudioRef.current;
-
-        if (soundMode === mode) {
-          if (rain) rain.pause();
-          if (wind) wind.pause();
-          setSoundMode('off');
-          return;
-        }
-
-        if (rain) rain.pause();
-        if (wind) wind.pause();
-
-        const targetAudio = mode === 'rain' ? rain : wind;
-        if (targetAudio) {
-          targetAudio.currentTime = 0;
-          
-          // iOS audio unlock: Explicit play call triggered directly by user click
-          const playPromise = targetAudio.play();
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              setSoundMode(mode);
-            }).catch((err) => {
-              console.error("Audio playback error:", err);
-            });
+      // Firebase listener for Community Interactions Tab
+      useEffect(() => {
+        const commRef = db.ref('community');
+        commRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const formatted = Object.keys(data).map(key => ({
+              id: key,
+              ...data[key],
+              replies: data[key].replies ? Object.keys(data[key].replies).map(rKey => ({
+                id: rKey,
+                ...data[key].replies[rKey]
+              })) : []
+            })).reverse();
+            setCommunityPosts(formatted);
+          } else {
+            setCommunityPosts([]);
           }
+        });
+
+        return () => commRef.off();
+      }, []);
+
+      const toggleRainSound = () => {
+        const rain = rainAudioRef.current;
+        if (!rain) return;
+
+        if (isPlayingRain) {
+          rain.pause();
+          setIsPlayingRain(false);
+        } else {
+          rain.currentTime = 0;
+          rain.play().then(() => {
+            setIsPlayingRain(true);
+          }).catch(err => {
+            console.log("Playback error:", err);
+          });
         }
       };
 
@@ -254,10 +259,43 @@
         setNewPost('');
       };
 
+      const handleDeletePost = (id) => {
+        db.ref('posts').child(id).remove();
+      };
+
+      // Community handlers
+      const handleAddCommunityPost = (e) => {
+        e.preventDefault();
+        if (!newCommunityPost.trim()) return;
+
+        db.ref('community').push({
+          text: newCommunityPost.trim(),
+          timestamp: Date.now()
+        });
+
+        setNewCommunityPost('');
+      };
+
+      const handleDeleteCommunityPost = (id) => {
+        db.ref('community').child(id).remove();
+      };
+
+      const handleAddReply = (e, postId) => {
+        e.preventDefault();
+        if (!replyText.trim()) return;
+
+        db.ref(`community/${postId}/replies`).push({
+          text: replyText.trim(),
+          timestamp: Date.now()
+        });
+
+        setReplyText('');
+        setReplyingToId(null);
+      };
+
       return (
         <div className="min-h-screen text-gray-700 flex flex-col items-center p-4 md:p-8">
           
-          {/* Header */}
           <header className="w-full max-w-2xl flex flex-wrap items-center justify-between gap-3 py-4 mb-6 border-b border-stone-200/60 bg-white/75 backdrop-blur-md px-6 rounded-2xl shadow-sm">
             <div className="flex items-center space-x-3">
               <LeafLogo />
@@ -267,44 +305,32 @@
               </div>
             </div>
 
-            {/* Sound Controls */}
-            <div className="flex items-center space-x-2">
+            <div>
               <button
-                onClick={() => toggleSound('rain')}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
-                  soundMode === 'rain'
+                onClick={toggleRainSound}
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
+                  isPlayingRain
                     ? 'bg-emerald-700 text-white shadow-sm'
                     : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'
                 }`}
               >
-                🌧️ {soundMode === 'rain' ? 'Slow Rain' : 'Rain'}
-              </button>
-
-              <button
-                onClick={() => toggleSound('wind')}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
-                  soundMode === 'wind'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                🌬️ {soundMode === 'wind' ? 'Gentle Wind' : 'Wind'}
+                🌧️ {isPlayingRain ? 'Raindrops (Playing)' : 'Raindrops'}
               </button>
             </div>
           </header>
 
-          {/* Navigation Tabs */}
-          <nav className="w-full max-w-2xl flex justify-around bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-stone-200/50 mb-8 shadow-sm">
+          <nav className="w-full max-w-2xl flex flex-wrap justify-around bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-stone-200/50 mb-8 shadow-sm gap-1">
             {[
               { id: 'ether', label: 'The Ether' },
               { id: 'wall', label: 'Safe Wall' },
-              { id: 'battery', label: 'Social Battery' },
+              { id: 'community', label: 'Community' },
+              { id: 'battery', label: 'Battery' },
               { id: 'breathe', label: 'Breathe' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2 text-xs md:text-sm font-medium rounded-xl transition-all duration-200 ${
+                className={`flex-1 min-w-[70px] py-2 text-xs font-medium rounded-xl transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-emerald-800 text-white shadow-sm'
                     : 'text-stone-500 hover:text-stone-800'
@@ -315,10 +341,8 @@
             ))}
           </nav>
 
-          {/* Main Content Area */}
           <main className="w-full max-w-2xl">
             
-            {/* The Ether */}
             {activeTab === 'ether' && (
               <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-stone-200/70 flex flex-col space-y-4">
                 <div className="flex justify-between items-center">
@@ -338,7 +362,6 @@
                   className="w-full h-60 p-4 rounded-2xl bg-[#faf9f6] border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-200 resize-none text-sm text-stone-700 leading-relaxed custom-scrollbar"
                 />
 
-                {/* Bottom Action Bar */}
                 <div className="pt-3 border-t border-stone-100 flex items-center justify-end space-x-3">
                   <button
                     onClick={handleSaveToJournal}
@@ -357,7 +380,6 @@
                   </button>
                 </div>
 
-                {/* Saved Journal Entries */}
                 {journalEntries.length > 0 && (
                   <div className="mt-6 pt-4 border-t border-stone-100 space-y-3">
                     <h3 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Saved Journal Entries</h3>
@@ -374,16 +396,15 @@
               </div>
             )}
 
-            {/* Safe Wall */}
             {activeTab === 'wall' && (
               <div className="space-y-6">
                 <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-emerald-900/10">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h2 className="text-lg font-medium text-stone-800">Safe Wall</h2>
-                      <p className="text-xs text-stone-500">Leave a gentle note, encouragement, or quiet thought for others.</p>
+                      <p className="text-xs text-stone-500">Read and anonymously post your quiet thoughts to the world.</p>
                     </div>
-                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-medium rounded-full">Global & Anonymous</span>
+                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-medium rounded-full">Global Board</span>
                   </div>
 
                   <form onSubmit={handleAddPost} className="mt-4 flex flex-col sm:flex-row gap-2">
@@ -391,36 +412,45 @@
                       type="text"
                       value={newPost}
                       onChange={(e) => setNewPost(e.target.value)}
-                      placeholder="Share something kind..."
-                      maxLength={180}
+                      placeholder="Share a feeling on the wall..."
+                      maxLength={220}
                       className="flex-1 px-4 py-3 rounded-2xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm placeholder:text-stone-400"
                     />
                     <button
                       type="submit"
                       className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs rounded-2xl transition-all shadow-sm active:scale-95"
                     >
-                      Publish Note
+                      Post to Wall
                     </button>
                   </form>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {wallPosts.length === 0 ? (
                     <div className="text-center py-12 bg-white/90 rounded-3xl border border-stone-100 text-stone-400 text-xs">
-                      The wall is completely still. Be the first to post a thought.
+                      The wall is empty. Be the first to leave a thought.
                     </div>
                   ) : (
                     wallPosts.map((post) => (
                       <div 
                         key={post.id} 
-                        className="animate-fade-in bg-white/90 backdrop-blur-sm p-5 rounded-2xl border border-stone-200/70 shadow-sm hover:shadow transition-all duration-200 flex flex-col justify-between space-y-3"
+                        className="animate-fade-in bg-white/90 backdrop-blur-sm p-5 rounded-3xl border border-stone-200/70 shadow-sm flex flex-col space-y-3"
                       >
-                        <p className="text-sm text-stone-700 leading-relaxed font-normal">{post.text}</p>
-                        <div className="flex items-center justify-between border-t border-stone-100 pt-2.5">
-                          <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-md">Anonymous</span>
-                          <span className="text-[10px] text-stone-400">
-                            {new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                        <p className="text-sm text-stone-800 leading-relaxed font-normal">{post.text}</p>
+                        <div className="flex items-center justify-between border-t border-stone-100 pt-3">
+                          <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-md">Anonymous Peer</span>
+                          
+                          <div className="flex items-center space-x-3">
+                            <span className="text-[10px] text-stone-400">
+                              {new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="text-[11px] text-rose-500 hover:text-rose-700 font-medium transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -429,7 +459,130 @@
               </div>
             )}
 
-            {/* Social Battery */}
+            {activeTab === 'community' && (
+              <div className="space-y-6">
+                <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-emerald-900/10">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h2 className="text-lg font-medium text-stone-800">Community Advice & Sharing</h2>
+                      <p className="text-xs text-stone-500">Share what's on your mind and receive kind, anonymous guidance from peers.</p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-teal-100 text-teal-800 text-[10px] font-medium rounded-full">Interactive</span>
+                  </div>
+
+                  <form onSubmit={handleAddCommunityPost} className="mt-4 flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={newCommunityPost}
+                      onChange={(e) => setNewCommunityPost(e.target.value)}
+                      placeholder="Ask for advice or share your feelings..."
+                      maxLength={220}
+                      className="flex-1 px-4 py-3 rounded-2xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm placeholder:text-stone-400"
+                    />
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs rounded-2xl transition-all shadow-sm active:scale-95"
+                    >
+                      Share & Ask
+                    </button>
+                  </form>
+                </div>
+
+                <div className="space-y-4">
+                  {communityPosts.length === 0 ? (
+                    <div className="text-center py-12 bg-white/90 rounded-3xl border border-stone-100 text-stone-400 text-xs">
+                      No community threads yet. Start one to get or give advice.
+                    </div>
+                  ) : (
+                    communityPosts.map((post) => (
+                      <div 
+                        key={post.id} 
+                        className="animate-fade-in bg-white/90 backdrop-blur-sm p-5 rounded-3xl border border-stone-200/70 shadow-sm flex flex-col space-y-4"
+                      >
+                        <div>
+                          <p className="text-sm text-stone-800 leading-relaxed font-normal">{post.text}</p>
+                          <div className="flex items-center justify-between border-t border-stone-100 pt-3 mt-3">
+                            <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-md">Anonymous Poster</span>
+                            
+                            <div className="flex items-center space-x-3">
+                              <span className="text-[10px] text-stone-400">
+                                {new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              <button
+                                onClick={() => handleDeleteCommunityPost(post.id)}
+                                className="text-[11px] text-rose-500 hover:text-rose-700 font-medium transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Threaded Advice Section */}
+                        <div className="bg-[#faf9f6] rounded-2xl p-4 border border-stone-100 space-y-3">
+                          <div className="text-xs font-medium text-stone-500 flex justify-between items-center">
+                            <span>Advice & Responses ({post.replies.length})</span>
+                          </div>
+
+                          {post.replies.length > 0 && (
+                            <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                              {post.replies.map(reply => (
+                                <div key={reply.id} className="bg-white p-3 rounded-xl border border-stone-200/60 text-xs text-stone-700 space-y-1">
+                                  <p className="leading-relaxed">{reply.text}</p>
+                                  <div className="flex justify-between items-center pt-1 text-[10px] text-stone-400">
+                                    <span className="text-emerald-800 font-medium">Anonymous Advisor</span>
+                                    <span>{new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {replyingToId === post.id ? (
+                            <form onSubmit={(e) => handleAddReply(e, post.id)} className="flex gap-2 pt-2">
+                              <input
+                                type="text"
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Write your advice or encouraging words..."
+                                maxLength={180}
+                                className="flex-1 px-3 py-2 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-xs"
+                                autoFocus
+                              />
+                              <button
+                                type="submit"
+                                className="px-4 py-2 bg-emerald-700 text-white text-xs font-medium rounded-xl hover:bg-emerald-800 transition-all"
+                              >
+                                Send
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setReplyingToId(null)}
+                                className="px-3 py-2 bg-stone-200 text-stone-600 text-xs font-medium rounded-xl hover:bg-stone-300 transition-all"
+                              >
+                                Cancel
+                              </button>
+                            </form>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setReplyingToId(post.id);
+                                setReplyText('');
+                              }}
+                              className="text-xs font-medium text-emerald-700 hover:text-emerald-900 transition-colors"
+                            >
+                              + Give Advice / Reply
+                            </button>
+                          )}
+                        </div>
+
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'battery' && (
               <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-stone-200/70 text-center space-y-6">
                 <div>
@@ -465,7 +618,6 @@
               </div>
             )}
 
-            {/* Box Breathing */}
             {activeTab === 'breathe' && (
               <div className="bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-sm border border-stone-200/70 flex flex-col items-center text-center space-y-8">
                 <div>
