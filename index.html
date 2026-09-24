@@ -123,7 +123,8 @@
       const rainAudioRef = useRef(null);
 
       useEffect(() => {
-        const rain = new Audio("https://ia800902.us.archive.org/27/items/RainSounds_201701/Rain.mp3");
+        // Using a reliable direct stream link for gentle rain ambience
+        const rain = new Audio("https://www.orangefreesounds.com/wp-content/uploads/2016/07/Rain-sound-mp3.mp3");
         rain.loop = true;
         rain.volume = 0.6;
         rainAudioRef.current = rain;
@@ -188,7 +189,7 @@
         return () => postsRef.off();
       }, []);
 
-      // Firebase listener for Community Interactions Tab
+      // Firebase listener for Community Tab
       useEffect(() => {
         const commRef = db.ref('community');
         commRef.on('value', (snapshot) => {
@@ -223,7 +224,8 @@
           rain.play().then(() => {
             setIsPlayingRain(true);
           }).catch(err => {
-            console.log("Playback error:", err);
+            console.log("Playback prevented or blocked:", err);
+            alert("Please click anywhere on the page first, then try turning on the rain sounds again.");
           });
         }
       };
